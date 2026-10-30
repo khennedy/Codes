@@ -1,9 +1,10 @@
 {% extends "core/base_publico.html" %}{% load rede %}
 {% block hero %}
 <section class="hero"><div class="interno">
-  <h1>Propriedades rurais com informação verificável e corretores especialistas.</h1>
-  <p>Fazendas de café, pecuária, grãos e silvicultura, representadas com exclusividade e acompanhadas por uma rede de corretores credenciados. Teaser com informações mínimas — detalhes completos para interessados qualificados.</p>
-  <div class="acoes"><a class="btn btn-cobre" href="#imoveis">Ver propriedades</a><a class="btn btn-sec" style="color:#fff;border-color:#fff" href="{% url 'core:quero_vender' %}">Quero vender minha propriedade</a></div>
+  <div class="sobretitulo">Inteligência imobiliária rural</div>
+  <h1>Fazendas com informação verificável e corretores especialistas.</h1>
+  <p>Café, pecuária, grãos e silvicultura, com representação exclusiva e uma rede de corretores credenciados. Os detalhes completos ficam disponíveis para interessados qualificados.</p>
+  <div class="acoes"><a class="btn" href="#imoveis">Ver propriedades</a><a class="btn btn-sec" href="{% url 'core:quero_vender' %}">Quero vender minha propriedade</a></div>
 </div></section>
 {% endblock %}
 {% block conteudo %}

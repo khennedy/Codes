@@ -191,7 +191,7 @@ class Imovel(models.Model):
             self.aptidoes = ",".join([self.aptidao_principal, *lista_codigos(self.aptidoes)])
         super().save(*args, **kwargs)
         if not self.codigo:
-            self.codigo = f"RR-{self.criado_em:%Y}-{self.pk:04d}"
+            self.codigo = f"TP-{self.criado_em:%Y}-{self.pk:04d}"
             Imovel.objects.filter(pk=self.pk).update(codigo=self.codigo)
 
     def get_absolute_url(self):

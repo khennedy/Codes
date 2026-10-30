@@ -1,4 +1,4 @@
-# Rede Rural — MVP da plataforma de corretagem rural
+# TerraPorto — MVP da plataforma de corretagem rural
 
 Aplicação web funcional da rede privada de corretores especializados em imóveis rurais descrita em:
 
@@ -8,14 +8,14 @@ Aplicação web funcional da rede privada de corretores especializados em imóve
 
 Os contratos da RE/MAX serviram só como **referência de estrutura** (associação de corretor e representação exclusiva). Nenhum texto deles foi copiado, e nenhum dado pessoal que aparece neles entrou no projeto. Todos os dados de demonstração são fictícios.
 
-> "Rede Rural" é um nome provisório. A marca final depende da escolha dos sócios e de busca de anterioridade no INPI. Para trocar o nome exibido, use a variável `PLATAFORMA_NOME`.
+> Antes do lançamento, confirme a disponibilidade da marca **TerraPorto** no INPI, do domínio e das redes sociais. O nome exibido vem da variável `PLATAFORMA_NOME` (padrão: TerraPorto).
 
 ## Como rodar
 
 Requisito: Python 3.10 ou superior.
 
 ```bash
-cd rede_rural
+cd terraporto
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -68,14 +68,14 @@ Percentuais, prazos e faixas são premissas ilustrativas dos documentos e podem 
 ## Estrutura
 
 ```
-rede_rural/
+terraporto/
 ├── config/        configurações do Django
 ├── core/          regras de negócio puras (regras.py), painel, vitrine, simulador, auditoria, minutas
 ├── contas/        usuários, corretores, Universidade Rural, mensalidades
 ├── imoveis/       proprietários, imóveis, checklist, fotos, autorizações, catálogo, dossiê
 ├── negocios/      compradores, perfis de busca, negociações, visitas, comissões, conflitos, crédito
 ├── templates/     telas (HTML renderizado no servidor, sem etapa de build)
-└── static/css/    identidade visual provisória ("rede de talhões": verde, cobre e areia)
+└── static/css/    interface clean: fundo claro, uma cor de destaque (verde TerraPorto)
 ```
 
 As regras de cálculo (rateio, faixas de preço, matriz documental, compatibilidade, proteção e viabilidade) ficam em `core/regras.py`. Esse módulo não depende do banco de dados e é coberto pelos testes de `core/tests.py`. O fluxo ponta a ponta (captação → validação → catálogo → data room → venda → comissão) é testado em `negocios/tests.py`.

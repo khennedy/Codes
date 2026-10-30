@@ -13,7 +13,7 @@
     <nav>
       <a href="{% url 'core:vitrine' %}">Propriedades</a>
       <a href="{% url 'core:quero_vender' %}">Quero vender</a>
-      {% if user.is_authenticated %}<a class="btn btn-cobre btn-pq" href="{% url 'core:painel' %}">Painel</a>{% else %}<a href="{% url 'contas:inscricao' %}">Sou corretor</a><a class="btn btn-cobre btn-pq" href="{% url 'login' %}">Entrar</a>{% endif %}
+      {% if user.is_authenticated %}<a class="btn" href="{% url 'core:painel' %}">Painel</a>{% else %}<a href="{% url 'contas:inscricao' %}">Sou corretor</a><a class="btn" href="{% url 'login' %}">Entrar</a>{% endif %}
     </nav>
   </div>
 </header>

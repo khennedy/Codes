@@ -8,11 +8,11 @@
 </head>
 <body>
 <input type="checkbox" id="menu-toggle" aria-label="Abrir menu">
-<div class="topo-mobile"><label for="menu-toggle" aria-hidden="true">☰</label><b>{{ PLATAFORMA_NOME }}</b><span></span></div>
+<div class="topo-mobile"><label for="menu-toggle" aria-hidden="true">☰</label>{% include "core/_logo.html" with tamanho=24 %}<b>{{ PLATAFORMA_NOME }}</b></div>
 <div class="app">
   <aside class="lateral">
     <a class="marca" href="{% url 'core:painel' %}">
-      {% include "core/_logo.html" with tamanho=30 %}
+      {% include "core/_logo.html" with tamanho=32 %}
       <span>{{ PLATAFORMA_NOME }}</span>
     </a>
     <p class="marca-sub">Inteligência imobiliária rural</p>

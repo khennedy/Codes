@@ -12,5 +12,5 @@ urlpatterns = [
     path("", include("negocios.urls")),
 ]
 
-admin.site.site_header = "Rede Rural — administração"
-admin.site.site_title = "Rede Rural"
+admin.site.site_header = "TerraPorto — administração"
+admin.site.site_title = "TerraPorto"

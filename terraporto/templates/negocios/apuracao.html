@@ -12,7 +12,7 @@
   <div class="kpi"><div class="rotulo">Valor de venda</div><div class="valor">{{ apuracao.valor_venda|brl_curto }}</div></div>
   <div class="kpi"><div class="rotulo">Comissão contratual</div><div class="valor">{{ apuracao.comissao_pct|pct }}</div><div class="det">{{ apuracao.comissao_total|brl }}</div></div>
   <div class="kpi"><div class="rotulo">Modelo</div><div class="valor" style="font-size:1.05rem">{{ apuracao.get_modelo_display }}</div></div>
-  <div class="kpi"><div class="rotulo">Soma das parcelas</div><div class="valor" style="font-size:1.1rem">{{ apuracao.soma_participacoes|brl }}</div><div class="det">{% if apuracao.fechada %}fecha com o total{% else %}<b style="color:var(--vermelho)">não fecha com o total</b>{% endif %}</div></div>
+  <div class="kpi"><div class="rotulo">Soma das parcelas</div><div class="valor" style="font-size:1.1rem">{{ apuracao.soma_participacoes|brl }}</div><div class="det">{% if apuracao.fechada %}fecha com o total{% else %}<b style="color:var(--erro)">não fecha com o total</b>{% endif %}</div></div>
 </div>
 <div class="nota"><b>Situação {{ n.situacao }}:</b> {{ situacao }}</div>
 {% if apuracao.alertas %}<div class="alerta alerta-aviso">{{ apuracao.alertas|linebreaksbr }}</div>{% endif %}

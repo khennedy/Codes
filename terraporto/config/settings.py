@@ -1,4 +1,4 @@
-"""Configurações da plataforma Rede Rural (MVP)."""
+"""Configurações da plataforma TerraPorto (MVP)."""
 import os
 from pathlib import Path
 
@@ -8,8 +8,8 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-inseguro-troque-em-produca
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
 
-# Nome provisório: a marca final depende da escolha dos sócios e de busca no INPI.
-PLATAFORMA_NOME = os.environ.get("PLATAFORMA_NOME", "Rede Rural")
+# Marca: confirmar disponibilidade no INPI, domínio e redes sociais antes do lançamento.
+PLATAFORMA_NOME = os.environ.get("PLATAFORMA_NOME", "TerraPorto")
 
 INSTALLED_APPS = [
     "django.contrib.admin",

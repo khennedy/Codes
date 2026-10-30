@@ -69,7 +69,7 @@ class FluxoRedeTests(TestCase):
     def test_fluxo_completo(self):
         imovel = self.cadastrar_imovel()
         self.assertEqual(imovel.captador, self.captador)
-        self.assertTrue(imovel.codigo.startswith("RR-"))
+        self.assertTrue(imovel.codigo.startswith("TP-"))
         self.assertEqual(imovel.documentos.count(), len(checklist.itens_para("pf")))
         self.assertFalse(imovel.documentos.filter(categoria="pessoa_juridica").exists())
 

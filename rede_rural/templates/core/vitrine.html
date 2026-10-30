@@ -1,0 +1,32 @@
+{% extends "core/base_publico.html" %}{% load rede %}
+{% block hero %}
+<section class="hero"><div class="interno">
+  <h1>Propriedades rurais com informação verificável e corretores especialistas.</h1>
+  <p>Fazendas de café, pecuária, grãos e silvicultura, representadas com exclusividade e acompanhadas por uma rede de corretores credenciados. Teaser com informações mínimas — detalhes completos para interessados qualificados.</p>
+  <div class="acoes"><a class="btn btn-cobre" href="#imoveis">Ver propriedades</a><a class="btn btn-sec" style="color:#fff;border-color:#fff" href="{% url 'core:quero_vender' %}">Quero vender minha propriedade</a></div>
+</div></section>
+{% endblock %}
+{% block conteudo %}
+<div class="cabecalho" id="imoveis">
+  <h2>Propriedades disponíveis</h2>
+  <form class="filtros" method="get">
+    <div class="campo"><select name="aptidao" onchange="this.form.submit()" aria-label="Aptidão">
+      <option value="">Todas as aptidões</option>
+      {% for codigo, rotulo in aptidoes %}<option value="{{ codigo }}"{% if codigo == aptidao %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}
+    </select></div>
+  </form>
+</div>
+<div class="imoveis-grade">
+  {% for i in imoveis %}
+  <a class="imovel-card" href="{% url 'core:vitrine_detalhe' i.codigo %}">
+    <div class="imovel-foto">{% if i.capa %}<img src="{% url 'core:arquivo_foto' i.capa.pk %}" alt="{{ i.capa.descricao }}" loading="lazy">{% else %}{% include "core/_logo.html" with tamanho=48 %}{% endif %}</div>
+    <div class="imovel-corpo">
+      <h3>{{ i.titulo }}</h3>
+      <small>{{ i.regiao|default:i.municipio }} · {{ i.uf }} · {{ i.area_total_ha|ha }}</small>
+      <div class="tags">{% for a in i.rotulos_aptidoes %}<span class="tag">{{ a }}</span>{% endfor %}</div>
+      <div class="preco">{% if i.exibir_preco_publico %}{{ i.preco_autorizado|brl }}{% else %}Preço sob consulta{% endif %}</div>
+    </div>
+  </a>
+  {% empty %}<p class="muted">Nenhuma propriedade publicada no momento.</p>{% endfor %}
+</div>
+{% endblock %}

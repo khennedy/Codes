@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Imóveis{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{% if eh_central %}Imóveis da rede{% else %}Minhas captações{% endif %}</h1><p>Cadastro → validação da central → divulgação aos corretores autorizados.</p></div>
+  <div class="acoes">
+    <form class="filtros" method="get"><div class="campo"><select name="status" onchange="this.form.submit()" aria-label="Status"><option value="">Todos os status</option>{% for v, r in status_choices %}<option value="{{ v }}"{% if v == status %} selected{% endif %}>{{ r }}</option>{% endfor %}</select></div></form>
+    <a class="btn" href="{% url 'imoveis:novo' %}">Novo imóvel</a>
+  </div>
+</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Código</th><th>Imóvel</th><th>Local</th><th class="num">Área</th><th class="num">Preço</th><th>Status</th>{% if eh_central %}<th>Captador</th>{% endif %}<th></th></tr></thead>
+  <tbody>{% for i in imoveis %}
+    <tr>
+      <td><a href="{{ i.get_absolute_url }}"><b>{{ i.codigo }}</b></a></td>
+      <td>{{ i.titulo }}<br><small>{{ i.get_aptidao_principal_display }}</small></td>
+      <td>{{ i.municipio }}/{{ i.uf }}</td>
+      <td class="num">{{ i.area_total_ha|ha }}</td>
+      <td class="num">{{ i.preco_referencia_anuncio|brl_curto }}</td>
+      <td>{% status_selo i %}{% if i.publicado %}<br><span class="selo selo-aprovado">no catálogo</span>{% endif %}</td>
+      {% if eh_central %}<td>{{ i.captador.nome }}</td>{% endif %}
+      <td>{% if eh_central and i.status == "em_validacao" %}<a class="btn btn-pq" href="{% url 'imoveis:avaliar' i.pk %}">Deliberar</a>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="8" class="vazio">Nenhum imóvel.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

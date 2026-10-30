@@ -1,0 +1,7 @@
+{% extends "core/base_publico.html" %}
+{% block titulo %}Credenciamento de corretor{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Credenciamento de corretor</h1><p>Inscrição → verificação do CRECI e referências → entrevista e prova prática → treinamento inicial → aprovação condicionada.</p></div></div>
+<div class="nota">A avaliação de conhecimento não substitui a habilitação legal (CRECI). A associação é autônoma: sem jornada, subordinação ou exclusividade pessoal.</div>
+<form method="post">{% csrf_token %}{% include "core/_form.html" %}<button class="btn" type="submit">Enviar inscrição</button></form>
+{% endblock %}

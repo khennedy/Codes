@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Corretores{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Corretores da rede</h1><p>Níveis são credenciamento comercial, não cargos de emprego.</p></div>
+  <form class="filtros" method="get"><div class="campo"><select name="status" onchange="this.form.submit()" aria-label="Status"><option value="">Todos os status</option>{% for v, r in status_choices %}<option value="{{ v }}"{% if v == status %} selected{% endif %}>{{ r }}</option>{% endfor %}</select></div></form>
+</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Corretor</th><th>CRECI</th><th>Região</th><th>Nível</th><th>Status</th><th class="num">Captações</th><th class="num">Negociações abertas</th></tr></thead>
+  <tbody>{% for c in corretores %}
+    <tr>
+      <td><a href="{% url 'contas:corretor' c.pk %}"><b>{{ c.nome }}</b></a><br><small>{{ c.especialidades }}</small></td>
+      <td>{{ c.creci }}/{{ c.creci_uf }}{% if c.creci_verificado %} ✔{% else %} <span class="selo selo-pendente">não verificado</span>{% endif %}</td>
+      <td>{{ c.regiao_atuacao|default:c.municipio }}</td>
+      <td>{{ c.get_nivel_display }}</td>
+      <td>{% status_selo c %}</td>
+      <td class="num">{{ c.n_captacoes }}</td>
+      <td class="num">{{ c.n_negociacoes }}</td>
+    </tr>{% empty %}<tr><td colspan="7" class="vazio">Nenhum corretor.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

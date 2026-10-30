@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Crédito{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Encaminhamentos a {{ config.parceiro_credito }}</h1><p>Fluxo separado: a rede envia somente os dados necessários, com consentimento, e guarda apenas o status do atendimento.</p></div></div>
+<div class="nota">Duas pessoas jurídicas, contratos e faturamento próprios. A rede não acessa extratos, endividamento, consultas restritivas ou dados financeiros do parceiro. Nunca prometa aprovação de crédito.</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Data</th><th>Comprador</th><th>Produto</th><th class="num">Valor estimado</th><th>Negociação</th><th>Dados compartilhados</th><th>Status</th>{% if eh_central %}<th></th>{% endif %}</tr></thead>
+  <tbody>{% for e in encaminhamentos %}
+    <tr>
+      <td>{{ e.criado_em|date:"d/m/Y" }}</td>
+      <td><a href="{{ e.comprador.get_absolute_url }}">{{ e.comprador.nome }}</a><br><small>{{ e.comprador.corretor.nome }}</small></td>
+      <td>{{ e.get_produto_display }}</td>
+      <td class="num">{{ e.valor_estimado|brl }}</td>
+      <td>{% if e.negociacao %}{{ e.negociacao.imovel.codigo }}{% else %}—{% endif %}</td>
+      <td><small>{{ e.dados_compartilhados }}</small></td>
+      <td>{% status_selo e %}{% if e.retorno %}<br><small>{{ e.retorno }}</small>{% endif %}</td>
+      {% if eh_central %}<td><a class="btn btn-sec btn-pq" href="{% url 'negocios:credito_status' e.pk %}">Atualizar</a></td>{% endif %}
+    </tr>{% empty %}<tr><td colspan="8" class="vazio">Nenhum encaminhamento.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "documentos/base_documento.html" %}{% load rede %}
+{% block titulo %}Minuta de representação — {{ imovel.codigo }}{% endblock %}
+{% block documento %}
+<h1>CONTRATO DE {% if contrato.tipo == "exclusiva" %}REPRESENTAÇÃO EXCLUSIVA{% else %}AUTORIZAÇÃO DE INTERMEDIAÇÃO SEM EXCLUSIVIDADE{% endif %} PARA VENDA DE IMÓVEL RURAL<br><small>(minuta orientativa — Código Civil, arts. 722 a 729)</small></h1>
+
+<h2>1. Partes e imóvel</h2>
+<p><b>CONTRATANTE(S):</b> <span class="preenchido">{{ proprietario.nome }}</span>{% if proprietario.cpf_cnpj %}, {{ proprietario.get_tipo_display|lower }} inscrita sob nº <span class="preenchido">{{ proprietario.cpf_cnpj }}</span>{% endif %}{% if proprietario.estado_civil %}, {{ proprietario.estado_civil }}{% if proprietario.regime_bens %} sob o regime de {{ proprietario.regime_bens }}{% endif %}{% endif %}{% if proprietario.conjuge %}, com anuência de <span class="preenchido">{{ proprietario.conjuge }}</span>{% endif %}{% if proprietario.representante %}, representado(a) por <span class="preenchido">{{ proprietario.representante }}</span>{% endif %}. Devem ser identificados todos os titulares, cônjuges, anuentes e procuradores, com os respectivos documentos.</p>
+<p><b>CONTRATADA:</b> <span class="preenchido">{{ config.razao_social }}</span>, CNPJ <span class="preenchido">{{ config.cnpj }}</span>, CRECI-J <span class="preenchido">{{ config.creci_j }}</span>, por meio do corretor responsável <span class="preenchido">{{ imovel.captador.nome }}</span> (CRECI {{ imovel.captador.creci }}/{{ imovel.captador.creci_uf }}).</p>
+<p><b>IMÓVEL:</b> <span class="preenchido">{{ imovel.titulo }}</span>, situado em <span class="preenchido">{{ imovel.municipio }}/{{ imovel.uf }}</span>, matrícula(s) nº <span class="preenchido">{{ imovel.matricula|default:"[A DEFINIR]" }}</span> do <span class="preenchido">{{ imovel.cartorio|default:"[CARTÓRIO A DEFINIR]" }}</span>, com área registral de <span class="preenchido">{{ imovel.area_registral_ha|ha }}</span>{% if imovel.bens_incluidos %}, incluindo os bens móveis: <span class="preenchido">{{ imovel.bens_incluidos }}</span>{% endif %}.</p>
+
+<h2>2. {% if contrato.tipo == "exclusiva" %}Exclusividade{% else %}Autorização{% endif %} e prazo</h2>
+{% if contrato.tipo == "exclusiva" %}
+<p>Os contratantes concedem à contratada a representação exclusiva para a venda do imóvel pelo prazo de <span class="preenchido">{{ contrato.prazo_dias }} dias</span>, de <span class="preenchido">{{ contrato.data_inicio|date:"d/m/Y" }}</span> a <span class="preenchido">{{ contrato.data_fim|date:"d/m/Y" }}</span>{% if contrato.renovacao_automatica %}, renovável por igual período salvo manifestação contrária{% endif %}. A contratada poderá compartilhar a oportunidade com corretores associados da rede, permanecendo responsável pela condução das visitas e negociações.</p>
+{% else %}
+<p>Os contratantes autorizam a contratada a intermediar a venda do imóvel, sem exclusividade, de <span class="preenchido">{{ contrato.data_inicio|date:"d/m/Y" }}</span> a <span class="preenchido">{{ contrato.data_fim|date:"d/m/Y" }}</span>, inclusive em parceria com corretores associados da rede.</p>
+{% endif %}
+
+<h2>3. Compromissos da contratada</h2>
+<p>Apresentar análise de mercado que fundamente a precificação; executar plano de divulgação controlada (teaser público, catálogo fechado e data room restrito); organizar o dossiê documental; realizar reuniões periódicas de acompanhamento e prestar contas sempre que solicitado. Descumprida alguma obrigação, os contratantes poderão notificá-la, com prazo de 7 dias úteis para solução, antes de encerrar antecipadamente a representação.</p>
+
+<h2>4. Preço e remuneração</h2>
+<p>Preço autorizado para anúncio: <span class="preenchido">{{ contrato.preco_autorizado|brl }}</span>{% if imovel.valor_mercado %}, considerando o valor de mercado estimado de {{ imovel.valor_mercado|brl }} (ref. {{ imovel.data_avaliacao|date:"d/m/Y" }}){% endif %}. Condições: {{ imovel.condicoes_pagamento|default:"[A DEFINIR]" }}. Remuneração de <span class="preenchido">{{ contrato.comissao_pct|pct }}</span> sobre o valor bruto da venda, devida com o resultado útil da intermediação, inclusive nas hipóteses dos arts. 725 a 727 do Código Civil quando aplicáveis.</p>
+
+<h2>5. Declarações dos contratantes</h2>
+<p>Os contratantes declaram a titularidade e a posse, e informam gravames, ônus, arrendamentos, parcerias, ocupações, passivos ambientais e trabalhistas conhecidos, comprometendo-se a atualizar essas informações durante a vigência. Informações não confirmadas não serão divulgadas como regulares.</p>
+
+<h2>6. Imagens, divulgação e dados</h2>
+<p>Fica autorizada a produção e o uso de fotos e vídeos do imóvel para divulgação controlada. A localização exata e os documentos serão acessados apenas por interessados verificados, de forma individual e registrada. Os dados pessoais serão tratados para a finalidade de intermediação, nos termos da Lei nº 13.709/2018.</p>
+
+<h2>7. Venda direta, compradores conhecidos e término</h2>
+<p>{% if contrato.excecoes %}<span class="preenchido">{{ contrato.excecoes|linebreaksbr }}</span>{% else %}[Definir regras para venda direta pelos contratantes durante a exclusividade (art. 726), compradores já conhecidos excluídos, e negócios concluídos após o término com interessados apresentados pela contratada (art. 727).]{% endif %}</p>
+
+<h2>8. Foro</h2>
+<p>Comarca de <span class="preenchido">{{ config.foro }}</span>. As partes admitem a assinatura eletrônica deste instrumento.</p>
+
+<p style="margin-top:40px">______________________, ____ de ______________ de {{ hoje|date:"Y" }}.</p>
+<p style="margin-top:50px">_____________________________________<br>CONTRATANTE(S)</p>
+<p style="margin-top:40px">_____________________________________<br>CONTRATADA</p>
+{% endblock %}

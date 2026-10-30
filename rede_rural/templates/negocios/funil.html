@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Negociações{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Funil de negociações</h1><p>novo → qualificado → visita agendada → visitado → proposta → diligência → contrato → concluído/perdido</p></div>
+  <div class="acoes"><a class="btn" href="{% url 'negocios:negociacao_nova' %}">Registrar oportunidade</a></div>
+</div>
+<div class="kanban">
+  {% for valor, rotulo, cartoes in colunas %}
+  <div class="coluna">
+    <h3><span>{{ rotulo }}</span><span class="selo">{{ cartoes|length }}</span></h3>
+    {% for n in cartoes %}
+      <a class="cartao" href="{{ n.get_absolute_url }}">
+        <b>{{ n.imovel.codigo }}</b> {{ n.imovel.titulo|truncatechars:34 }}<br>
+        {{ n.comprador.nome }}{% if eh_central %} · <small>{{ n.corretor_vendedor.nome }}</small>{% endif %}<br>
+        <small class="muted">{% if n.valor_fechamento %}{{ n.valor_fechamento|brl_curto }}{% elif n.valor_proposta %}proposta {{ n.valor_proposta|brl_curto }}{% else %}{{ n.imovel.preco_referencia_anuncio|brl_curto }}{% endif %}{% if n.proxima_acao_em %} · {{ n.proxima_acao_em|date:"d/m" }}{% endif %}</small>
+      </a>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

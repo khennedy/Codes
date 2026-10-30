@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Deliberar {{ imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Deliberação da central</h1><p>{{ imovel.codigo }} — {{ imovel.titulo }} · {% status_selo imovel %}</p></div>
+  <div class="acoes"><a class="btn btn-sec" href="{{ imovel.get_absolute_url }}">Ver cadastro completo</a></div>
+</div>
+<div class="grade grade-3">
+  <div class="col-2">
+    <form method="post">{% csrf_token %}{% include "core/_form.html" %}<button class="btn" type="submit">Registrar deliberação</button></form>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Compatibilidade de preço</h2>
+      <p>{{ faixa.rotulo|selo:faixa.faixa }}{% if faixa.desvio_pct is not None %} <b>{{ faixa.desvio_pct|pct }}</b> em relação ao valor de mercado{% endif %}</p>
+      <p>{{ faixa.recomendacao }}</p>
+      <dl class="ficha">
+        <dt>Pretendido</dt><dd>{{ imovel.preco_pretendido|brl }}</dd>
+        <dt>Mercado</dt><dd>{{ imovel.valor_mercado|brl }}</dd>
+        <dt>Autorizado</dt><dd>{{ imovel.preco_autorizado|brl }}</dd>
+      </dl>
+      <p class="nota">Faixas internas: A até {{ config.faixa_a_pct|pct }}, B até {{ config.faixa_b_pct|pct }}, C até {{ config.faixa_c_pct|pct }}, D acima. Não são tolerâncias da ABNT; com poucos comparáveis, decida pelo intervalo fundamentado. Não altere o preço do proprietário sem concordância: sem acordo, o cadastro fica sem publicação.</p>
+    </div>
+    <div class="card">
+      <h2>Matriz documental</h2>
+      <p>{{ decisao.rotulo|selo:decisao.codigo }}</p>
+      {% if decisao.motivos %}<ul>{% for m in decisao.motivos %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+      <a href="{% url 'imoveis:checklist' imovel.pk %}">Abrir checklist</a>
+    </div>
+    <div class="card">
+      <h2>Conflito de interesse</h2>
+      <p class="muted">Imóvel de sócio, administrador, avaliador ou pessoa vinculada exige controle adicional e, em valores relevantes, avaliação independente. A remuneração do avaliador não pode depender do valor emitido.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

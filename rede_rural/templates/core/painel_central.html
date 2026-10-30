@@ -1,0 +1,73 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Painel da central{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Console de qualidade e direção</h1><p>Indicadores essenciais e filas de trabalho da central.</p></div>
+  <div class="acoes"><a class="btn btn-sec" href="{% url 'core:simulador' %}">Simulador</a><a class="btn" href="{% url 'imoveis:lista' %}?status=em_validacao">Validar imóveis</a></div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="rotulo">Corretores ativos</div><div class="valor">{{ ind.corretores_ativos }}</div><div class="det">{{ ind.corretores_em_analise }} em análise</div></div>
+  <div class="kpi"><div class="rotulo">Imóveis publicados</div><div class="valor">{{ ind.imoveis_publicados }}</div><div class="det">de {{ ind.imoveis_total }} cadastrados · {{ ind.imoveis_em_validacao }} em validação</div></div>
+  <div class="kpi"><div class="rotulo">Exclusividades vigentes</div><div class="valor">{{ ind.exclusivos_validos }}</div><div class="det">representação assinada</div></div>
+  <div class="kpi"><div class="rotulo">Qualidade média do dossiê</div><div class="valor">{% if ind.qualidade_media is not None %}{{ ind.qualidade_media }}%{% else %}—{% endif %}</div><div class="det">imóveis publicados</div></div>
+  <div class="kpi"><div class="rotulo">Tempo médio de validação</div><div class="valor">{% if ind.dias_validacao is not None %}{{ ind.dias_validacao }} d{% else %}—{% endif %}</div><div class="det">envio → deliberação</div></div>
+  <div class="kpi"><div class="rotulo">Contatos qualificados</div><div class="valor">{{ ind.contatos_qualificados }}</div><div class="det">{{ ind.compradores }} compradores registrados</div></div>
+  <div class="kpi"><div class="rotulo">Visitas realizadas</div><div class="valor">{{ ind.visitas }}</div><div class="det">{{ ind.propostas }} com proposta ou adiante</div></div>
+  <div class="kpi"><div class="rotulo">Conversão</div><div class="valor">{% if ind.conversao is not None %}{{ ind.conversao }}%{% else %}—{% endif %}</div><div class="det">concluídos / encerrados</div></div>
+  <div class="kpi"><div class="rotulo">VGV 12 meses</div><div class="valor">{{ ind.vgv_12m|brl_curto }}</div><div class="det">comissão {{ ind.comissao_12m|brl_curto }}</div></div>
+  <div class="kpi"><div class="rotulo">Receita bruta da central</div><div class="valor">{{ ind.receita_central_12m|brl_curto }}</div><div class="det">rateios, 12 meses (antes de tributos)</div></div>
+  <div class="kpi"><div class="rotulo">Mensalidades do mês</div><div class="valor">{{ ind.mensalidades_recebidas|brl_curto }}</div><div class="det">de {{ ind.mensalidades_previstas|brl_curto }} · {{ ind.inadimplentes }} em atraso</div></div>
+  <div class="kpi"><div class="rotulo">Conflitos abertos</div><div class="valor">{{ ind.conflitos_abertos }}</div><div class="det">{{ ind.encaminhamentos_credito }} encaminhamentos de crédito</div></div>
+</div>
+
+<div class="card">
+  <div class="card-titulo"><h2>Funil da rede</h2><a href="{% url 'negocios:funil' %}">Ver negociações</a></div>
+  <div class="funil">{% for valor, rotulo, n in funil %}<div class="etapa"><b>{{ n }}</b><span>{{ rotulo }}</span></div>{% endfor %}</div>
+</div>
+
+<div class="grade grade-2">
+  <div class="card">
+    <div class="card-titulo"><h2>Imóveis aguardando validação</h2></div>
+    {% for i in em_validacao %}
+      <p><a href="{% url 'imoveis:avaliar' i.pk %}"><b>{{ i.codigo }}</b> {{ i.titulo }}</a><br><small>{{ i.municipio }}/{{ i.uf }} · captador {{ i.captador.nome }} · enviado {{ i.enviado_validacao_em|date:"d/m/Y" }}</small></p>
+    {% empty %}<p class="muted">Nenhum imóvel na fila.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Pedidos de acesso ao data room</h2></div>
+    {% for n in dossies_solicitados %}
+      <form method="post" action="{% url 'negocios:dossie_liberar' n.pk %}" class="acoes" style="justify-content:space-between;margin-bottom:8px">
+        {% csrf_token %}<input type="hidden" name="voltar" value="{% url 'core:painel' %}">
+        <span><a href="{{ n.get_absolute_url }}">{{ n.imovel.codigo }}</a> · {{ n.corretor_vendedor.nome }}<br><small>{{ n.get_etapa_display }} · pedido em {{ n.dossie_solicitado_em|date:"d/m H:i" }}</small></span>
+        <button class="btn btn-pq">Liberar</button>
+      </form>
+    {% empty %}<p class="muted">Nenhum pedido pendente.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Corretores para credenciar</h2></div>
+    {% for c in corretores_pendentes %}
+      <p><a href="{% url 'contas:corretor' c.pk %}"><b>{{ c.nome }}</b></a> — CRECI {{ c.creci }}/{{ c.creci_uf }} {% status_selo c %}<br><small>{{ c.municipio }} · inscrito em {{ c.criado_em|date:"d/m/Y" }}</small></p>
+    {% empty %}<p class="muted">Nenhuma inscrição pendente.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Possíveis duplicidades de comprador</h2></div>
+    {% for c in duplicidades %}
+      <p><a href="{{ c.get_absolute_url }}">{{ c.nome }}</a> — registrado por {{ c.corretor.nome }} em {{ c.criado_em|date:"d/m" }}; anterior de {{ c.duplicidade_de.corretor.nome }} ({{ c.duplicidade_de.criado_em|date:"d/m" }})<br>
+      <a class="btn btn-sec btn-pq" href="{% url 'negocios:conflito_novo' %}?tipo=duplicidade&comprador={{ c.pk }}">Abrir análise</a></p>
+    {% empty %}<p class="muted">Nenhuma duplicidade pendente.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Exclusividades vencendo (30 dias)</h2></div>
+    {% for c in exclusividades_vencendo %}
+      <p><a href="{{ c.imovel.get_absolute_url }}">{{ c.imovel.codigo }} {{ c.imovel.titulo }}</a><br><small>vence em {{ c.data_fim|date:"d/m/Y" }} ({{ c.dias_restantes }} dias)</small></p>
+    {% empty %}<p class="muted">Nada vencendo.</p>{% endfor %}
+    {% if revisoes_preco %}<h3>Revisões de preço vencidas</h3>{% for i in revisoes_preco %}<p><a href="{% url 'imoveis:avaliar' i.pk %}">{{ i.codigo }}</a> — revisar desde {{ i.revisar_preco_em|date:"d/m/Y" }}</p>{% endfor %}{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Conflitos e leads</h2></div>
+    {% for c in conflitos %}<p><a href="{% url 'negocios:conflito' c.pk %}">#{{ c.pk }} {{ c.get_tipo_display }}</a> {% status_selo c %}</p>{% empty %}<p class="muted">Sem conflitos abertos.</p>{% endfor %}
+    <hr>
+    {% for l in leads %}<p><a href="{% url 'core:lead_atribuir' l.pk %}">{{ l.nome }}</a> — {{ l.get_tipo_display }}{% if l.imovel %} ({{ l.imovel.codigo }}){% endif %}</p>{% empty %}<p class="muted">Sem leads novos.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

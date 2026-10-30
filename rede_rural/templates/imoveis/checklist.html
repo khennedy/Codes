@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Checklist {{ imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Checklist documental e diligência</h1><p>{{ imovel.codigo }} — {{ imovel.titulo }} · vendedor {{ imovel.proprietario.get_tipo_display|lower }}</p></div>
+  <div class="acoes"><a class="btn btn-sec" href="{{ imovel.get_absolute_url }}">Voltar</a></div>
+</div>
+<div class="nota">Registre fonte, data, responsável e validade de cada documento. Documentos pessoais ficam em repositório restrito. {% if not eh_central %}Somente a central marca itens como <b>validados</b> e aponta riscos condicionantes ou impeditivos.{% endif %}</div>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ docs.management_form }}{{ verif.management_form }}
+  {% if docs.non_form_errors %}<div class="alerta alerta-erro">{{ docs.non_form_errors }}</div>{% endif %}
+  {% for categoria, linhas in grupos %}
+  <fieldset>
+    <legend>{{ categoria }}</legend>
+    <div class="tabela-wrap"><table class="form-tabela">
+      <thead><tr><th>Documento</th><th>Status</th>{% if eh_central %}<th>Risco</th>{% endif %}<th>Emissão</th><th>Validade</th><th>Responsável</th><th>Prazo</th><th>Observações</th><th>Arquivo</th></tr></thead>
+      <tbody>
+      {% for doc, f in linhas %}
+        <tr>
+          <td style="min-width:220px">{{ f.id }}<span class="semaforo semaforo-{{ doc.semaforo }}"></span>{{ doc.descricao }}{% if doc.essencial %} <b>*</b>{% endif %}{% if f.errors %}<div class="erro">{{ f.errors }}</div>{% endif %}</td>
+          <td>{{ f.status }}</td>
+          {% if eh_central %}<td>{{ f.risco }}</td>{% endif %}
+          <td>{{ f.emissao }}</td><td>{{ f.validade }}</td><td>{{ f.responsavel }}</td><td>{{ f.prazo }}</td><td>{{ f.observacoes }}</td>
+          <td style="min-width:180px">{% if doc.arquivo %}<a href="{% url 'core:arquivo_documento' doc.pk %}">baixar</a><br>{% endif %}{{ f.arquivo }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </fieldset>
+  {% endfor %}
+  <fieldset>
+    <legend>Fonte dos dados por bloco</legend>
+    <div class="tabela-wrap"><table class="form-tabela">
+      <thead><tr><th>Bloco</th><th>Fonte</th><th>Observação</th></tr></thead>
+      <tbody>{% for f in verif %}<tr><td>{{ f.id }}{{ f.instance.get_bloco_display }}</td><td>{{ f.fonte }}</td><td>{{ f.observacao }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="muted"><small>Distinga “informado pelo proprietário”, “observado em visita”, “documentado” e “validado por especialista”.</small></p>
+  </fieldset>
+  <button class="btn" type="submit">Salvar checklist</button>
+</form>
+{% endblock %}

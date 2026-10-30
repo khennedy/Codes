@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Conflito #{{ c.pk }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Conflito #{{ c.pk }} — {{ c.get_tipo_display }}</h1><p>{% status_selo c %} · aberto por {{ c.reclamante }} em {{ c.criado_em|date:"d/m/Y H:i" }}</p></div>
+  <div class="acoes"><a class="btn btn-sec" href="{% url 'negocios:conflitos' %}">Voltar</a></div>
+</div>
+<div class="grade grade-2">
+  <div class="card">
+    <h2>Relato</h2>
+    <dl class="ficha">
+      {% if c.negociacao %}<dt>Negociação</dt><dd><a href="{{ c.negociacao.get_absolute_url }}">{{ c.negociacao }}</a></dd>{% endif %}
+      {% if c.imovel %}<dt>Imóvel</dt><dd>{{ c.imovel }}</dd>{% endif %}
+      {% if c.comprador %}<dt>Comprador</dt><dd>{% if eh_central %}<a href="{{ c.comprador.get_absolute_url }}">{{ c.comprador.nome }}</a>{% else %}#{{ c.comprador.pk }}{% endif %}</dd>{% endif %}
+      <dt>Envolvidos</dt><dd>{% for e in c.envolvidos.all %}{{ e.nome }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+      <dt>Descrição</dt><dd>{{ c.descricao|linebreaksbr }}</dd>
+      <dt>Evidências</dt><dd>{{ c.evidencias|linebreaksbr|info }}</dd>
+    </dl>
+    <h3 style="margin-top:14px">Critérios de análise</h3>
+    <ol style="font-size:.9rem"><li>Relacionamento comercial legítimo</li><li>Data de apresentação efetiva do imóvel</li><li>Comprovação do atendimento</li><li>Participação na negociação</li><li>Contribuição para o resultado</li><li>Condições dos contratos existentes</li></ol>
+  </div>
+  <div class="card">
+    <h2>Decisão</h2>
+    {% if c.fundamentacao %}<p><b>Fundamentação:</b> {{ c.fundamentacao|linebreaksbr }}</p><p><b>Medida:</b> {{ c.get_medida_display }}{% if c.decidido_por %} · por {{ c.decidido_por }}{% endif %}</p>{% endif %}
+    {% if form %}
+      <form method="post">{% csrf_token %}{% for campo in form %}{% include "core/_campo.html" %}{% endfor %}<button class="btn" type="submit">Registrar</button></form>
+    {% elif interessado and eh_central %}
+      <div class="alerta alerta-aviso">Você é parte desta divergência e não pode decidi-la.</div>
+    {% else %}
+      <p class="muted">A central conduz a análise com contraditório e direito de defesa. Medidas disciplinares são proporcionais e previstas em contrato.</p>
+    {% endif %}
+    <h3>Histórico</h3>
+    <ul class="timeline">{% for h in historico %}<li><div class="quando">{{ h.criado_em|date:"d/m/Y H:i" }} · {{ h.usuario|default:"sistema" }}</div>{{ h.acao }} {{ h.descricao }}</li>{% empty %}<li>Sem registros.</li>{% endfor %}</ul>
+  </div>
+</div>
+{% endblock %}

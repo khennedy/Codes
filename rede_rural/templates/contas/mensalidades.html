@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Mensalidades{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Mensalidades</h1><p>Vinculadas ao acesso à tecnologia, suporte e formação efetivamente disponibilizados.</p></div>
+  {% if eh_central %}<form method="post" action="{% url 'contas:gerar_mensalidades' %}">{% csrf_token %}<button class="btn">Gerar mensalidades do mês</button></form>{% endif %}
+</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Competência</th>{% if eh_central %}<th>Corretor</th>{% endif %}<th class="num">Valor</th><th>Vencimento</th><th>Status</th>{% if eh_central %}<th></th>{% endif %}</tr></thead>
+  <tbody>{% for m in mensalidades %}
+    <tr>
+      <td>{{ m.competencia|date:"m/Y" }}</td>
+      {% if eh_central %}<td>{{ m.corretor.nome }}</td>{% endif %}
+      <td class="num">{{ m.valor|brl }}</td>
+      <td>{{ m.vencimento|date:"d/m/Y" }}{% if m.atrasada %} <span class="selo selo-vencido">em atraso</span>{% endif %}</td>
+      <td>{% status_selo m %}{% if m.paga_em %}<br><small>{{ m.paga_em|date:"d/m/Y" }}</small>{% endif %}</td>
+      {% if eh_central %}<td>{% if m.status == "pendente" %}<form method="post" action="{% url 'contas:mensalidade_status' m.pk %}" class="acoes">{% csrf_token %}<button class="btn btn-pq" name="status" value="paga">Baixar</button><button class="btn btn-sec btn-pq" name="status" value="cancelada">Cancelar</button></form>{% endif %}</td>{% endif %}
+    </tr>{% empty %}<tr><td colspan="6" class="vazio">Nenhuma mensalidade.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

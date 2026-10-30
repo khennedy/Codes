@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Meu painel{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Olá, {{ corretor.usuario.first_name|default:corretor.nome }}</h1><p>Nível {{ corretor.get_nivel_display }} · {{ corretor.regiao_atuacao|default:corretor.municipio }}</p></div>
+  <div class="acoes">
+    <a class="btn btn-sec" href="{% url 'negocios:comprador_novo' %}">Registrar comprador</a>
+    <a class="btn" href="{% url 'imoveis:proprietario_novo' %}?proximo=imovel">Nova captação</a>
+  </div>
+</div>
+
+{% if mensalidade_pendente %}<div class="alerta alerta-aviso">Mensalidade de {{ mensalidade_pendente.competencia|date:"m/Y" }} pendente ({{ mensalidade_pendente.valor|brl }}), vencimento {{ mensalidade_pendente.vencimento|date:"d/m/Y" }}.</div>{% endif %}
+{% for c in protecao_vencendo %}<div class="alerta alerta-info">A prioridade comercial de <a href="{{ c.get_absolute_url }}">{{ c.nome }}</a> vence em {{ c.protecao_ate|date:"d/m/Y" }}. Registre uma atividade efetiva para renovar.</div>{% endfor %}
+
+<div class="kpis">
+  <div class="kpi"><div class="rotulo">Volume concluído (12 meses)</div><div class="valor">{{ volume_12m|brl_curto }}</div><div class="det">nível sugerido: {{ nivel_sugerido }}</div></div>
+  <div class="kpi"><div class="rotulo">Minhas captações</div><div class="valor">{{ corretor.captacoes.count }}</div></div>
+  <div class="kpi"><div class="rotulo">Meus compradores</div><div class="valor">{{ corretor.compradores.count }}</div></div>
+  <div class="kpi"><div class="rotulo">Interesse em imóveis meus</div><div class="valor">{{ interesse_nos_meus|length }}</div><div class="det">negociações de outros corretores</div></div>
+</div>
+
+<div class="card">
+  <div class="card-titulo"><h2>Meu funil</h2><a href="{% url 'negocios:funil' %}">Abrir funil</a></div>
+  <div class="funil">{% for valor, rotulo, n in funil %}<div class="etapa"><b>{{ n }}</b><span>{{ rotulo }}</span></div>{% endfor %}</div>
+</div>
+
+<div class="grade grade-2">
+  <div class="card">
+    <div class="card-titulo"><h2>Negociações em andamento</h2></div>
+    {% for n in negociacoes %}
+      <p><a href="{{ n.get_absolute_url }}"><b>{{ n.imovel.codigo }}</b> × {{ n.comprador.nome }}</a> {% status_selo n "etapa" %}{% if n.proxima_acao %}<br><small>Próxima ação: {{ n.proxima_acao }} {{ n.proxima_acao_em|date:"d/m" }}</small>{% endif %}</p>
+    {% empty %}<p class="muted">Nenhuma negociação aberta. Procure imóveis no <a href="{% url 'imoveis:catalogo' %}">catálogo</a>.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Minhas captações</h2><a href="{% url 'imoveis:lista' %}">Todas</a></div>
+    {% for i in captacoes %}
+      <p><a href="{{ i.get_absolute_url }}"><b>{{ i.codigo }}</b> {{ i.titulo }}</a> {% status_selo i %}{% if i.publicado %} <span class="selo selo-aprovado">no catálogo</span>{% endif %}</p>
+    {% empty %}<p class="muted">Nenhuma captação ainda.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Outros corretores negociando meus imóveis</h2></div>
+    {% for n in interesse_nos_meus %}
+      <p><a href="{{ n.get_absolute_url }}">{{ n.imovel.codigo }}</a> — {{ n.corretor_vendedor.nome }} {% status_selo n "etapa" %}</p>
+    {% empty %}<p class="muted">Nenhum por enquanto.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-titulo"><h2>Novidades no catálogo</h2><a href="{% url 'imoveis:catalogo' %}">Catálogo</a></div>
+    {% for i in novidades %}
+      <p><a href="{% url 'imoveis:catalogo_detalhe' i.pk %}"><b>{{ i.titulo }}</b></a><br><small>{{ i.municipio }}/{{ i.uf }} · {{ i.area_total_ha|ha }} · {{ i.preco_referencia_anuncio|brl_curto }}</small></p>
+    {% empty %}<p class="muted">Sem novidades.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

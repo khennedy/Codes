@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Credenciamento em análise{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Credenciamento em análise</h1><p>Status atual: {% if corretor %}{% status_selo corretor %}{% else %}sem perfil de corretor{% endif %}</p></div></div>
+<div class="grade grade-2">
+  <div class="card">
+    <h2>Próximos passos</h2>
+    <ol>
+      <li>Verificação do CRECI {% if corretor.creci_verificado %}✔{% endif %}</li>
+      <li>Referências e histórico disciplinar acessível</li>
+      <li>Entrevista e avaliação situacional</li>
+      <li>Prova prática (estudo de caso de fazenda) {% if corretor.nota_prova_pratica %}— nota {{ corretor.nota_prova_pratica }}{% endif %}</li>
+      <li>Treinamento inicial {% if corretor.treinamento_inicial %}✔{% endif %}</li>
+      <li>Aprovação condicionada pela central</li>
+    </ol>
+    {% if corretor %}<a class="btn btn-sec" href="{% url 'core:minuta_associacao' corretor.pk %}">Ver minuta do contrato de associação</a>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Trilhas obrigatórias para ingresso</h2>
+    <ul>{% for t in obrigatorias %}<li>{{ t.nome }}</li>{% endfor %}</ul>
+    <p class="muted">Enquanto isso, conheça o <a href="{% url 'core:simulador' %}">simulador econômico</a> da rede.</p>
+  </div>
+</div>
+{% endblock %}

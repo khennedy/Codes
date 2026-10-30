@@ -1,0 +1,79 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Simulador econômico{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Simulador econômico</h1><p>Hipóteses para discussão entre sócios. Não são projeções garantidas nem promessa de rentabilidade.</p></div>
+  <div class="acoes">
+    <a class="btn {% if aba != 'venda' %}btn-sec{% endif %}" href="?aba=venda">Rateio de uma venda</a>
+    <a class="btn {% if aba != 'cenarios' %}btn-sec{% endif %}" href="?aba=cenarios">Cenários anuais</a>
+    <a class="btn {% if aba != 'viabilidade' %}btn-sec{% endif %}" href="?aba=viabilidade">Capacidade de pagamento</a>
+  </div>
+</div>
+
+{% if aba == "venda" %}
+<div class="grade grade-3">
+  <div class="card">
+    <h2>Premissas</h2>
+    <form method="get">{% include "core/_form.html" with form=venda_form %}<input type="hidden" name="aba" value="venda"><button class="btn" name="simular" value="1">Simular</button></form>
+  </div>
+  <div class="card col-2">
+    <h2>Rateio — {{ rateio.valor_venda|brl }} a {{ rateio.comissao_pct|pct }}</h2>
+    {% for a in rateio.alertas %}<div class="alerta alerta-aviso">{{ a }}</div>{% endfor %}
+    <div class="tabela-wrap"><table>
+      <thead><tr><th>Participante</th><th class="num">% da comissão</th><th class="num">Valor bruto</th></tr></thead>
+      <tbody>{% for p in rateio.parcelas %}<tr><td>{{ p.papel|capfirst }}{% if p.observacao %}<br><small>{{ p.observacao }}</small>{% endif %}</td><td class="num">{{ p.percentual|pct }}</td><td class="num">{{ p.valor|brl }}</td></tr>{% endfor %}</tbody>
+      <tfoot><tr><td>Comissão total</td><td class="num">100%</td><td class="num">{{ rateio.comissao_total|brl }}</td></tr></tfoot>
+    </table></div>
+    <h3 style="margin-top:18px">Comparativo por nível (captador e vendedor no mesmo nível)</h3>
+    <div class="tabela-wrap"><table>
+      <thead><tr><th>Nível</th><th class="num">Captação</th><th class="num">Venda</th><th class="num">Central (residual bruto)</th><th class="num">Mensalidade</th></tr></thead>
+      <tbody>{% for nome, r, mensalidade in comparativo %}<tr><td>{{ nome }}</td><td class="num">{{ r.parcelas.0.valor|brl }}</td><td class="num">{{ r.parcelas.1.valor|brl }}</td><td class="num">{{ r.parcelas.2.valor|brl }}</td><td class="num">{{ mensalidade|brl }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="nota">Quanto maior o nível dos corretores, menor o residual da central — a variação exige análise de incentivo e sustentabilidade (seção 19). No modelo do regulamento de parcerias, a divisão é 45% captador, 45% vendedor e 10% central.</p>
+  </div>
+</div>
+{% elif aba == "cenarios" %}
+<div class="grade grade-3">
+  <div class="card">
+    <h2>Premissas</h2>
+    <form method="get">{% include "core/_form.html" with form=cenarios_form %}<input type="hidden" name="aba" value="cenarios"><button class="btn" name="simular" value="1">Simular</button></form>
+  </div>
+  <div class="card col-2">
+    <h2>Cenários anuais hipotéticos</h2>
+    <div class="tabela-wrap"><table>
+      <thead><tr><th>Cenário</th><th class="num">Vendas</th><th class="num">Ticket médio</th><th class="num">VGV</th><th class="num">Comissão ({{ config.comissao_referencia_pct|pct }})</th><th class="num">Parcela da central</th></tr></thead>
+      <tbody>{% for c in cenarios %}<tr><td>{{ c.nome }}</td><td class="num">{{ c.vendas }}</td><td class="num">{{ c.ticket|brl_curto }}</td><td class="num">{{ c.vgv|brl_curto }}</td><td class="num">{{ c.comissao|brl_curto }}</td><td class="num">{{ c.central|brl_curto }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <div class="kpis" style="margin-top:16px">
+      <div class="kpi"><div class="rotulo">Receita recorrente bruta (ano)</div><div class="valor">{{ recorrente|brl_curto }}</div><div class="det">mensalidades, se todos adimplentes</div></div>
+    </div>
+    <p class="nota">Construa a DRE mensal com regime tributário validado, custo de aquisição, folha, nuvem, seguros, jurídico, viagens, marketing, treinamento, inadimplência e capital de giro antes de qualquer decisão.</p>
+  </div>
+</div>
+{% else %}
+<div class="grade grade-3">
+  <div class="card">
+    <h2>Premissas</h2>
+    <form method="get">{% include "core/_form.html" with form=viab_form %}<input type="hidden" name="aba" value="viabilidade"><button class="btn" name="simular" value="1">Simular</button></form>
+  </div>
+  <div class="card col-2">
+    <h2>A terra se paga?</h2>
+    <p class="muted">Receita, custos e serviço da dívida (tabela Price) em três cenários. Conservador: produtividade −20% e preço −10%; otimista: +10% e +5%.</p>
+    <div class="tabela-wrap"><table>
+      <thead><tr><th></th>{% for c in viabilidade %}<th class="num">{{ c.cenario }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        <tr><td>Produtividade</td>{% for c in viabilidade %}<td class="num">{{ c.produtividade|numero:1 }}</td>{% endfor %}</tr>
+        <tr><td>Preço por unidade</td>{% for c in viabilidade %}<td class="num">{{ c.preco|brl }}</td>{% endfor %}</tr>
+        <tr><td>Receita anual</td>{% for c in viabilidade %}<td class="num">{{ c.receita|brl }}</td>{% endfor %}</tr>
+        <tr><td>Custos anuais</td>{% for c in viabilidade %}<td class="num">{{ c.custo|brl }}</td>{% endfor %}</tr>
+        <tr><td>Resultado operacional</td>{% for c in viabilidade %}<td class="num">{{ c.resultado_operacional|brl }}</td>{% endfor %}</tr>
+        <tr><td>Parcela anual do financiamento</td>{% for c in viabilidade %}<td class="num">{{ c.parcela_anual|brl }}</td>{% endfor %}</tr>
+        <tr><td><b>Saldo após a dívida</b></td>{% for c in viabilidade %}<td class="num"><b>{{ c.saldo_apos_divida|brl }}</b></td>{% endfor %}</tr>
+        <tr><td>Cobertura (resultado ÷ parcela)</td>{% for c in viabilidade %}<td class="num">{% if c.cobertura is not None %}{{ c.cobertura|numero:2 }}×{% else %}—{% endif %}</td>{% endfor %}</tr>
+      </tbody>
+    </table></div>
+    <p class="nota">Não confunda projeção com garantia de crédito. A análise de capacidade de pagamento, garantias e produtos é feita pelo parceiro de crédito, sob contrato próprio.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

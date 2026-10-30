@@ -1,0 +1,19 @@
+{% extends "documentos/base_documento.html" %}
+{% block titulo %}Relatório de visita{% endblock %}
+{% block aviso %}{% endblock %}
+{% block documento %}
+<h1>RELATÓRIO DE VISITA COMERCIAL</h1>
+<p><b>Imóvel:</b> {{ n.imovel.codigo }} — {{ n.imovel.titulo }} ({{ n.imovel.municipio }}/{{ n.imovel.uf }})<br>
+<b>Data:</b> {{ v.data_hora|date:"d/m/Y H:i" }} · <b>Corretor responsável:</b> {{ v.corretor.nome }} · <b>Situação:</b> {{ v.realizada|yesno:"realizada,agendada" }}<br>
+<b>Autorização do proprietário:</b> {{ v.autorizacao_proprietario|yesno:"sim,não" }}</p>
+<h2>Objetivo</h2><p>{{ v.objetivo }}</p>
+<h2>Participantes</h2><p>{{ v.participantes|default:"—" }}</p>
+<h2>Interesses e restrições do comprador</h2><p>{{ v.interesses_restricoes|linebreaksbr|default:"—" }}</p>
+<h2>Pontos apresentados</h2><p>{{ v.pontos_apresentados|linebreaksbr|default:"—" }}</p>
+<h2>Dúvidas e perguntas técnicas</h2><p>{{ v.perguntas_tecnicas|linebreaksbr|default:"—" }}</p>
+<h2>Condições negociais discutidas</h2><p>{{ v.condicoes_negociais|linebreaksbr|default:"—" }}</p>
+<h2>Pendências, responsáveis e prazo de retorno</h2><p>{{ v.pendencias|linebreaksbr|default:"—" }}</p>
+<h2>Próxima ação</h2><p>{{ v.proxima_acao|default:"—" }}</p>
+<h2>Consentimentos registrados</h2><p>{{ v.consentimentos|default:"—" }}</p>
+<p class="muted" style="margin-top:30px"><small>Documento da negociação. Não integra o dossiê do imóvel.</small></p>
+{% endblock %}

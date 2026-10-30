@@ -1,0 +1,52 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}{{ comprador.nome }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{{ comprador.nome }}</h1><p>{{ comprador.get_tipo_display }} · {{ comprador.get_origem_display }} · registrado por {{ comprador.corretor.nome }} em {{ comprador.criado_em|date:"d/m/Y H:i" }}</p></div>
+  <div class="acoes">
+    <a class="btn btn-sec" href="{% url 'negocios:comprador_editar' comprador.pk %}">Editar</a>
+    <a class="btn btn-sec" href="{% url 'negocios:credito_novo' comprador.pk %}">Encaminhar ao parceiro de crédito</a>
+    <a class="btn" href="{% url 'negocios:demanda_nova' comprador.pk %}">Novo perfil de busca</a>
+  </div>
+</div>
+{% if comprador.duplicidade_de %}<div class="alerta alerta-aviso">Possível duplicidade com registro anterior de {{ comprador.duplicidade_de.corretor.nome }} ({{ comprador.duplicidade_de.criado_em|date:"d/m/Y H:i" }}). Este registro fica sem prioridade até análise da central.</div>{% endif %}
+<div class="grade grade-3">
+  <div class="card">
+    <h2>Contato e registro</h2>
+    <dl class="ficha">
+      <dt>Telefone</dt><dd>{{ comprador.telefone|info }}</dd>
+      <dt>E-mail</dt><dd>{{ comprador.email|info }}</dd>
+      <dt>Município</dt><dd>{{ comprador.municipio|info }}/{{ comprador.uf }}</dd>
+      <dt>Etapa do cadastro</dt><dd>{{ comprador.get_etapa_cadastro_display }}</dd>
+      <dt>Prioridade comercial</dt><dd>{% if comprador.protegido %}até {{ comprador.protecao_ate|date:"d/m/Y" }}{% else %}não vigente{% endif %}</dd>
+      <dt>Consentimento</dt><dd>{{ comprador.consentimento_lgpd|yesno:"Sim,Não" }}</dd>
+      <dt>Evidência</dt><dd>{{ comprador.evidencia_relacionamento|info }}</dd>
+    </dl>
+    <p class="nota">Prioridade de {{ config.dias_protecao_comprador }} dias, renovada por visita, proposta, reunião ou negociação documentada. O vencimento não elimina eventual direito decorrente de intermediação efetiva.</p>
+    {% if duplicidades and eh_central %}<h3>Registros semelhantes</h3>{% for d in duplicidades %}<p><a href="{{ d.get_absolute_url }}">{{ d.nome }}</a> — {{ d.corretor.nome }}, {{ d.criado_em|date:"d/m/Y" }}</p>{% endfor %}{% endif %}
+  </div>
+  <div class="card col-2">
+    <h2>Negociações</h2>
+    {% for n in negociacoes %}<p><a href="{{ n.get_absolute_url }}"><b>{{ n.imovel.codigo }}</b> {{ n.imovel.titulo }}</a> {% status_selo n "etapa" %}</p>{% empty %}<p class="muted">Nenhuma. Registre este comprador em um imóvel do catálogo.</p>{% endfor %}
+    <a class="btn btn-sec btn-pq" href="{% url 'negocios:negociacao_nova' %}?comprador={{ comprador.pk }}">Registrar em um imóvel</a>
+    {% if encaminhamentos %}<h3 style="margin-top:16px">Encaminhamentos de crédito</h3>{% for e in encaminhamentos %}<p>{{ e.get_produto_display }} · {{ e.valor_estimado|brl }} {% status_selo e %}{% if e.retorno %}<br><small>{{ e.retorno }}</small>{% endif %}</p>{% endfor %}{% endif %}
+  </div>
+</div>
+
+{% for d, compat in demandas %}
+<div class="card">
+  <div class="card-titulo"><h2>Perfil de busca: {{ d.descricao }}</h2><span>{% if not d.ativa %}<span class="selo">inativo</span>{% endif %} <a class="btn btn-sec btn-pq" href="{% url 'negocios:demanda_editar' comprador.pk d.pk %}">Editar</a></span></div>
+  <p class="muted">{{ d.rotulos_aptidoes|join:", "|default:"qualquer aptidão" }} · {{ d.orcamento_min|brl_curto }} a {{ d.orcamento_max|brl_curto }} · {{ d.area_min_ha|default:"—" }} a {{ d.area_max_ha|default:"—" }} ha · {{ d.municipios|default:d.regiao|default:d.uf|default:"qualquer região" }}{% if d.exige_irrigacao %} · exige irrigação{% endif %} · {{ d.get_horizonte_display }}</p>
+  <h3>Imóveis compatíveis no catálogo</h3>
+  {% for c in compat %}
+    <div style="border-bottom:1px solid var(--linha);padding:8px 0">
+      <div class="acoes" style="justify-content:space-between"><span><b class="pontos">{{ c.pontos }} pts</b> — <a href="{% url 'imoveis:catalogo_detalhe' c.imovel.pk %}">{{ c.imovel.codigo }} {{ c.imovel.titulo }}</a> · {{ c.imovel.preco_referencia_anuncio|brl_curto }} · {{ c.imovel.area_total_ha|ha }}</span>
+      <a class="btn btn-pq" href="{% url 'negocios:negociacao_nova' %}?imovel={{ c.imovel.pk }}&comprador={{ comprador.pk }}">Registrar oportunidade</a></div>
+      <ul class="criterios">{% for cr in c.criterios %}<li><span>{{ cr.nome }}: {{ cr.explicacao }}</span><span>{{ cr.pontos }}/{{ cr.maximo }}</span></li>{% endfor %}</ul>
+    </div>
+  {% empty %}<p class="muted">Nenhum imóvel com compatibilidade acima de 50 pontos.</p>{% endfor %}
+</div>
+{% empty %}
+<div class="card"><p class="muted">Sem perfil de busca. <a href="{% url 'negocios:demanda_nova' comprador.pk %}">Cadastre a segunda etapa</a> para ver imóveis compatíveis.</p></div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Distribuir lead{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Distribuir lead</h1></div><div class="acoes"><a class="btn btn-sec" href="{% url 'core:leads' %}">Voltar</a></div></div>
+<div class="grade grade-2">
+  <div class="card">
+    <h2>{{ lead.nome }}</h2>
+    <dl class="ficha">
+      <dt>Tipo</dt><dd>{{ lead.get_tipo_display }}</dd>
+      <dt>Telefone</dt><dd>{{ lead.telefone }}</dd>
+      <dt>E-mail</dt><dd>{{ lead.email|default:"—" }}</dd>
+      <dt>Município</dt><dd>{{ lead.municipio|default:"—" }}</dd>
+      <dt>Imóvel</dt><dd>{% if lead.imovel %}{{ lead.imovel }}{% else %}—{% endif %}</dd>
+      <dt>Mensagem</dt><dd>{{ lead.mensagem|linebreaksbr|default:"—" }}</dd>
+      <dt>Consentimento</dt><dd>{{ lead.consentimento|yesno:"Sim,Não" }}</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h2>Atribuir a um corretor</h2>
+    {% if lead.tipo == "comprador" %}<p class="nota">O comprador será registrado na carteira do corretor com origem “rede”{% if lead.imovel %} e a negociação com {{ lead.imovel.codigo }} será aberta{% endif %}.</p>{% else %}<p class="nota">O corretor fará o primeiro contato com o proprietário e, se houver interesse, a captação com autorização escrita.</p>{% endif %}
+    <form method="post">{% csrf_token %}{% include "core/_form.html" %}
+      <div class="acoes"><button class="btn" type="submit">Atribuir</button><button class="btn btn-perigo" type="submit" name="descartar" value="1" formnovalidate>Descartar</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

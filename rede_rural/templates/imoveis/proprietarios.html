@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Proprietários{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Proprietários</h1><p>Dados pessoais restritos ao captador e à central.</p></div>
+  <div class="acoes"><a class="btn" href="{% url 'imoveis:proprietario_novo' %}?proximo=imovel">Novo proprietário e captação</a></div>
+</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Nome</th><th>Tipo</th><th>Contato</th><th>Município</th><th>LGPD</th>{% if eh_central %}<th>Captador</th>{% endif %}<th>Imóveis</th><th></th></tr></thead>
+  <tbody>{% for p in proprietarios %}
+    <tr>
+      <td><b>{{ p.nome }}</b>{% if p.representante %}<br><small>Representante: {{ p.representante }}</small>{% endif %}</td>
+      <td>{{ p.get_tipo_display }}</td>
+      <td>{{ p.telefone|default:"—" }}<br><small>{{ p.email }}</small></td>
+      <td>{{ p.municipio }}/{{ p.uf }}</td>
+      <td>{{ p.consentimento_lgpd|yesno:"✔,pendente" }}</td>
+      {% if eh_central %}<td>{{ p.captado_por.nome|default:"—" }}</td>{% endif %}
+      <td>{% for i in p.imoveis.all %}<a href="{{ i.get_absolute_url }}">{{ i.codigo }}</a> {% empty %}—{% endfor %}</td>
+      <td><a class="btn btn-sec btn-pq" href="{% url 'imoveis:proprietario_editar' p.pk %}">Editar</a> <a class="btn btn-pq" href="{% url 'imoveis:novo' %}?proprietario={{ p.pk }}">+ Imóvel</a></td>
+    </tr>{% empty %}<tr><td colspan="8" class="vazio">Nenhum proprietário cadastrado.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

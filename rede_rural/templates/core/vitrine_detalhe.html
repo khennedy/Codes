@@ -1,0 +1,30 @@
+{% extends "core/base_publico.html" %}{% load rede %}
+{% block titulo %}{{ imovel.titulo }}{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'core:vitrine' %}">← Todas as propriedades</a></p>
+<div class="grade grade-3">
+  <div class="col-2">
+    <div class="card">
+      <h1>{{ imovel.titulo }}</h1>
+      <p class="muted">{{ imovel.regiao|default:imovel.municipio }} · {{ imovel.uf }} · código {{ imovel.codigo }}</p>
+      <div class="tags" style="margin-bottom:12px">{% for a in imovel.rotulos_aptidoes %}<span class="tag">{{ a }}</span>{% endfor %}</div>
+      {% if fotos %}<div class="galeria" style="margin-bottom:14px">{% for f in fotos %}<figure><img src="{% url 'core:arquivo_foto' f.pk %}" alt="{{ f.descricao }}"><figcaption>{{ f.descricao }} · {{ f.data_foto|date:"m/Y" }}</figcaption></figure>{% endfor %}</div>{% endif %}
+      <dl class="ficha">
+        <dt>Área total</dt><dd>{{ imovel.area_total_ha|ha }}</dd>
+        <dt>Aptidão principal</dt><dd>{{ imovel.get_aptidao_principal_display }}</dd>
+        <dt>Irrigação</dt><dd>{{ imovel.irrigacao|yesno:"Sim,Não" }}</dd>
+        <dt>Preço</dt><dd>{% if imovel.exibir_preco_publico %}{{ imovel.preco_autorizado|brl }}{% else %}Sob consulta{% endif %}</dd>
+      </dl>
+      {% if imovel.lista_destaques %}<h3 style="margin-top:16px">Destaques</h3><ul>{% for d in imovel.lista_destaques %}<li>{{ d }}</li>{% endfor %}</ul>{% endif %}
+      <div class="nota">Localização exata, documentos e ficha técnica completa são compartilhados com interessados qualificados, por meio de um corretor credenciado da rede.</div>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Tenho interesse</h2>
+      <p class="muted">Um corretor especialista da rede entrará em contato.</p>
+      <form method="post">{% csrf_token %}{% include "core/_form.html" %}<button class="btn" type="submit">Enviar</button></form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Comissão {{ n.imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Apuração de comissão</h1><p>{{ n }} · {% status_selo apuracao %}</p></div>
+  <div class="acoes">
+    <form method="post">{% csrf_token %}<button class="btn btn-sec" name="acao" value="recalcular" onclick="return confirm('Recalcular a partir das regras atuais? Ajustes manuais serão perdidos.')">Recalcular pelas regras</button></form>
+    <a class="btn btn-sec" href="{{ n.get_absolute_url }}">Voltar</a>
+  </div>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="rotulo">Valor de venda</div><div class="valor">{{ apuracao.valor_venda|brl_curto }}</div></div>
+  <div class="kpi"><div class="rotulo">Comissão contratual</div><div class="valor">{{ apuracao.comissao_pct|pct }}</div><div class="det">{{ apuracao.comissao_total|brl }}</div></div>
+  <div class="kpi"><div class="rotulo">Modelo</div><div class="valor" style="font-size:1.05rem">{{ apuracao.get_modelo_display }}</div></div>
+  <div class="kpi"><div class="rotulo">Soma das parcelas</div><div class="valor" style="font-size:1.1rem">{{ apuracao.soma_participacoes|brl }}</div><div class="det">{% if apuracao.fechada %}fecha com o total{% else %}<b style="color:var(--vermelho)">não fecha com o total</b>{% endif %}</div></div>
+</div>
+<div class="nota"><b>Situação {{ n.situacao }}:</b> {{ situacao }}</div>
+{% if apuracao.alertas %}<div class="alerta alerta-aviso">{{ apuracao.alertas|linebreaksbr }}</div>{% endif %}
+{% if n.em_disputa %}<div class="alerta alerta-erro">Conflito em análise: o rateio não pode ser aprovado até a decisão.</div>{% endif %}
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  <div class="tabela-wrap"><table class="form-tabela">
+    <thead><tr><th>Papel</th><th>Corretor</th><th>% da comissão</th><th class="num">Valor atual</th><th>Observação</th><th>NF emitida</th><th>Pago</th><th>Remover</th></tr></thead>
+    <tbody>{% for f in formset %}<tr>
+      <td>{{ f.id }}{{ f.papel }}{{ f.errors }}</td><td>{{ f.corretor }}</td><td style="max-width:110px">{{ f.percentual }}</td>
+      <td class="num">{% if f.instance.pk %}{{ f.instance.valor|brl }}{% endif %}</td>
+      <td>{{ f.observacao }}</td><td>{{ f.nota_fiscal_emitida }}</td><td>{{ f.pago }}</td><td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="muted"><small>Cada participante emite seu próprio documento fiscal, indicando a corretagem do negócio como origem. Pagamento somente conforme resultado útil e pactuação jurídica, com as retenções aplicáveis. A central não altera unilateralmente direitos contratuais.</small></p>
+  <div class="campos" style="max-width:420px">{% for campo in status_form %}{% include "core/_campo.html" %}{% endfor %}</div>
+  <button class="btn" type="submit">Salvar rateio</button>
+</form>
+{% endblock %}

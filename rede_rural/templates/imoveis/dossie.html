@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Dossiê {{ imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="marca-dagua"><span>CONFIDENCIAL<br>{{ user }} · {{ agora|date:"d/m/Y H:i" }}<br>{{ imovel.codigo }}</span></div>
+<div class="cabecalho">
+  <div><h1>Dossiê de captação</h1><p>{{ imovel.codigo }} — {{ imovel.titulo }}</p></div>
+  <div class="acoes"><button class="btn btn-sec" onclick="window.print()">Imprimir</button><a class="btn btn-sec" href="{% if completo %}{{ imovel.get_absolute_url }}{% else %}{% url 'imoveis:catalogo_detalhe' imovel.pk %}{% endif %}">Voltar</a></div>
+</div>
+<div class="faixa-confidencial">Uso interno e acesso restrito, registrado em auditoria. Acesso individual de <b>{{ user }}</b> em {{ agora|date:"d/m/Y H:i" }}{% if liberacao %}, válido até {{ liberacao.dossie_liberado_ate|date:"d/m/Y H:i" }}{% endif %}. Não equivale a laudo pericial. Proibido repassar a terceiros não autorizados.</div>
+
+<div class="grade grade-2">
+  <div class="card">
+    <h2>Identificação fundiária</h2>
+    <dl class="ficha">
+      <dt>Município / UF</dt><dd>{{ imovel.municipio }}/{{ imovel.uf }}</dd>
+      <dt>Coordenadas</dt><dd>{% if imovel.latitude %}{{ imovel.latitude }}, {{ imovel.longitude }}{% else %}{{ ""|info }}{% endif %}</dd>
+      <dt>Acesso</dt><dd>{{ imovel.acesso|info }}</dd>
+      <dt>Matrícula(s)</dt><dd>{{ imovel.matricula|info }}</dd>
+      <dt>Cartório</dt><dd>{{ imovel.cartorio|info }}</dd>
+      <dt>Área registral / medida / útil</dt><dd>{{ imovel.area_registral_ha|ha }} / {{ imovel.area_medida_ha|ha }} / {{ imovel.area_util_ha|ha }}</dd>
+      <dt>CAR</dt><dd>{{ imovel.car|info }}</dd>
+      <dt>CCIR / NIRF</dt><dd>{{ imovel.ccir|info }} · {{ imovel.nirf|info }}</dd>
+      <dt>SIGEF</dt><dd>{{ imovel.sigef_certificado|info }}</dd>
+      {% if completo %}<dt>Titular</dt><dd>{{ imovel.proprietario.nome }} ({{ imovel.proprietario.get_tipo_display }})</dd>{% endif %}
+    </dl>
+  </div>
+  <div class="card">
+    <h2>Status de verificação</h2>
+    <p>{{ decisao.rotulo|selo:decisao.codigo }}</p>
+    {% if decisao.motivos %}<ul>{% for m in decisao.motivos %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+    <dl class="ficha">{% for v in verificacoes %}<dt>{{ v.get_bloco_display }}</dt><dd>{{ v.get_fonte_display }}</dd>{% endfor %}</dl>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Documentos e pendências</h2>
+  <div class="tabela-wrap"><table>
+    <thead><tr><th>Documento</th><th>Status</th><th>Risco</th><th>Validade</th><th>Responsável / prazo</th><th>Observações</th><th></th></tr></thead>
+    <tbody>{% for d in documentos %}
+      <tr><td><span class="semaforo semaforo-{{ d.semaforo }}"></span>{{ d.descricao }}</td><td>{{ d.get_status_display }}</td><td>{{ d.get_risco_display }}</td><td>{{ d.validade|date:"d/m/Y"|default:"—" }}</td><td>{{ d.responsavel|default:"—" }}{% if d.prazo %} · {{ d.prazo|date:"d/m/Y" }}{% endif %}</td><td>{{ d.observacoes }}</td><td>{% if d.arquivo %}<a href="{% url 'core:arquivo_documento' d.pk %}">baixar</a>{% endif %}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <p class="muted"><small>Certidão negativa isolada não assegura ausência de litígios; CAR não comprova propriedade; imagem de satélite não comprova regularidade; certidão de matrícula não garante inexistência de passivo ambiental.</small></p>
+</div>
+
+<div class="card">
+  <h2>Evidências fotográficas</h2>
+  <div class="galeria">{% for f in fotos %}<figure><img src="{% url 'core:arquivo_foto' f.pk %}" alt="{{ f.descricao }}"><figcaption>{{ f.get_bloco_display }} · {{ f.descricao }} · {{ f.data_foto|date:"d/m/Y" }}{% if f.autor %} · {{ f.autor }}{% endif %}</figcaption></figure>{% empty %}<p class="muted">Sem fotos.</p>{% endfor %}</div>
+</div>
+{% endblock %}

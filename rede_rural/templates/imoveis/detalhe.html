@@ -1,0 +1,141 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}{{ imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div>
+    <h1>{{ imovel.titulo }}</h1>
+    <p><b>{{ imovel.codigo }}</b> · {{ imovel.municipio }}/{{ imovel.uf }} · captador {{ imovel.captador.nome }} · {% status_selo imovel %}{% if imovel.publicado %} <span class="selo selo-aprovado">no catálogo</span>{% endif %}</p>
+  </div>
+  <div class="acoes">
+    <a class="btn btn-sec" href="{% url 'imoveis:editar' imovel.pk %}">Editar cadastro</a>
+    <a class="btn btn-sec" href="{% url 'imoveis:checklist' imovel.pk %}">Checklist documental</a>
+    <a class="btn btn-sec" href="{% url 'imoveis:dossie' imovel.pk %}">Dossiê</a>
+    {% if imovel.status == "rascunho" or imovel.status == "pendente_regularizacao" or imovel.status == "recusado" %}
+      <form method="post" action="{% url 'imoveis:enviar_validacao' imovel.pk %}">{% csrf_token %}<button class="btn">Enviar para validação</button></form>
+    {% endif %}
+    {% if eh_central %}<a class="btn btn-cobre" href="{% url 'imoveis:avaliar' imovel.pk %}">Deliberar</a>{% endif %}
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="rotulo">Matriz documental</div><div class="valor" style="font-size:1.1rem">{{ decisao.rotulo|selo:decisao.codigo }}</div><div class="det">{{ decisao.motivos|length }} apontamento(s)</div></div>
+  <div class="kpi"><div class="rotulo">Compatibilidade de preço</div><div class="valor" style="font-size:1.1rem">{{ faixa.rotulo|selo:faixa.faixa }}</div><div class="det">{% if faixa.desvio_pct is not None %}{{ faixa.desvio_pct|pct }} vs. valor de mercado{% else %}sem avaliação{% endif %}</div></div>
+  <div class="kpi"><div class="rotulo">Qualidade do dossiê</div><div class="valor">{{ qualidade }}%</div><div class="barra"><span style="width:{{ qualidade }}%"></span></div></div>
+  <div class="kpi"><div class="rotulo">Autorização de venda</div>{% if contrato_vigente %}<div class="valor" style="font-size:1.1rem">{{ contrato_vigente.get_tipo_display|selo:"vigente" }}</div><div class="det">até {{ contrato_vigente.data_fim|date:"d/m/Y" }} ({{ contrato_vigente.dias_restantes }} dias)</div>{% else %}<div class="valor" style="font-size:1.1rem">{{ "Sem autorização"|selo:"bloqueado" }}</div><div class="det"><a href="{% url 'imoveis:contrato_novo' imovel.pk %}">Registrar autorização</a></div>{% endif %}</div>
+</div>
+
+{% if decisao.motivos %}<div class="alerta {% if decisao.codigo == 'bloqueado' %}alerta-erro{% else %}alerta-aviso{% endif %}"><b>{{ decisao.rotulo }}:</b><ul style="margin:4px 0 0">{% for m in decisao.motivos %}<li>{{ m }}</li>{% endfor %}</ul></div>{% endif %}
+{% if imovel.parecer_central %}<div class="nota"><b>Parecer da central:</b> {{ imovel.parecer_central|linebreaksbr }}</div>{% endif %}
+
+<div class="grade grade-2">
+  <div class="card">
+    <h2>Ficha técnica</h2>
+    <dl class="ficha">
+      <dt>Aptidões</dt><dd>{{ imovel.rotulos_aptidoes|join:", " }}</dd>
+      <dt>Região / acesso</dt><dd>{{ imovel.regiao|info }} · {{ imovel.acesso|info }}</dd>
+      <dt>Coordenadas (protegidas)</dt><dd>{% if imovel.latitude %}{{ imovel.latitude }}, {{ imovel.longitude }}{% else %}{{ ""|info }}{% endif %}</dd>
+      <dt>Matrícula / cartório</dt><dd>{{ imovel.matricula|info }} · {{ imovel.cartorio|info }}</dd>
+      <dt>Área registral / medida</dt><dd>{{ imovel.area_registral_ha|ha }} / {{ imovel.area_medida_ha|ha }}</dd>
+      <dt>Área útil / APP+RL</dt><dd>{{ imovel.area_util_ha|ha }} / {{ imovel.area_app_rl_ha|ha }}</dd>
+      <dt>CAR / CCIR / NIRF</dt><dd>{{ imovel.car|info }} · {{ imovel.ccir|info }} · {{ imovel.nirf|info }}</dd>
+      <dt>SIGEF</dt><dd>{{ imovel.sigef_certificado|info }}</dd>
+      <dt>Altitude / relevo</dt><dd>{{ imovel.altitude_m|unidade:"m" }} · {{ imovel.get_declividade_display|info }}</dd>
+      <dt>Solo / mecanizável</dt><dd>{{ imovel.textura_solo|info }} · {{ imovel.mecanizavel_pct|pct }}</dd>
+      <dt>Análise de solo</dt><dd>{{ imovel.data_analise_solo|date:"m/Y"|info }}</dd>
+      <dt>Água</dt><dd>nascentes: {{ imovel.nascentes|info }} · cursos: {{ imovel.cursos_dagua|info }} · açudes: {{ imovel.acudes|info }} · poços: {{ imovel.pocos|info }}</dd>
+      <dt>Irrigação / outorga</dt><dd>{{ imovel.irrigacao|yesno:"Sim,Não" }}{% if imovel.area_irrigada_ha %} ({{ imovel.area_irrigada_ha|ha }}){% endif %} · {{ imovel.get_outorga_display }}</dd>
+      {% if imovel.cafe_pes %}<dt>Café</dt><dd>{{ imovel.cafe_pes|numero }} pés · {{ imovel.cafe_area_ha|ha }} · {{ imovel.cafe_variedades|info }}</dd>{% endif %}
+      <dt>Produtividade</dt><dd>{{ imovel.produtividade_media|info }}</dd>
+      <dt>Culturas</dt><dd>{{ imovel.culturas|linebreaksbr|info }}</dd>
+      <dt>Pecuária</dt><dd>{{ imovel.rebanho|info }}{% if imovel.lotacao_ua_ha %} · {{ imovel.lotacao_ua_ha }} UA/ha{% endif %}</dd>
+      <dt>Benfeitorias</dt><dd>casas: {{ imovel.casas|info }} · barracões: {{ imovel.barracoes_m2|unidade:"m²" }} · cercas: {{ imovel.cercas_km|unidade:"km" }} · energia: {{ imovel.energia|info }}<br>{{ imovel.benfeitorias|linebreaksbr }}</dd>
+      <dt>Bens incluídos</dt><dd>{{ imovel.bens_incluidos|info }}</dd>
+    </dl>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Precificação</h2>
+      <dl class="ficha">
+        <dt>Pretendido pelo proprietário</dt><dd>{{ imovel.preco_pretendido|brl }}</dd>
+        <dt>Valor de mercado estimado</dt><dd>{{ imovel.valor_mercado|brl }}{% if imovel.data_avaliacao %}<br><small>{{ imovel.metodologia_avaliacao }} · ref. {{ imovel.data_avaliacao|date:"d/m/Y" }} · {{ imovel.avaliador }}</small>{% endif %}</dd>
+        <dt>Autorizado para anúncio</dt><dd>{{ imovel.preco_autorizado|brl }}</dd>
+        <dt>Preço por hectare</dt><dd>{{ imovel.preco_por_ha|brl }}</dd>
+        <dt>Comissão</dt><dd>{{ imovel.comissao_pct|pct }}</dd>
+        <dt>Condições</dt><dd>{{ imovel.condicoes_pagamento|info }}</dd>
+        <dt>Próxima revisão</dt><dd>{{ imovel.revisar_preco_em|date:"d/m/Y"|info }}</dd>
+      </dl>
+      <p class="nota">{{ faixa.recomendacao }}</p>
+    </div>
+    <div class="card">
+      <h2>Proprietário</h2>
+      <dl class="ficha">
+        <dt>Nome</dt><dd>{{ imovel.proprietario.nome }} ({{ imovel.proprietario.get_tipo_display }})</dd>
+        <dt>Contato</dt><dd>{{ imovel.proprietario.telefone|info }} · {{ imovel.proprietario.email|info }}</dd>
+        <dt>Estado civil</dt><dd>{{ imovel.proprietario.estado_civil|info }} {{ imovel.proprietario.regime_bens }}</dd>
+        <dt>Cônjuge / anuente</dt><dd>{{ imovel.proprietario.conjuge|info }}</dd>
+        <dt>Consentimento LGPD</dt><dd>{{ imovel.proprietario.consentimento_lgpd|yesno:"Sim,Pendente" }}</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h2>Fonte dos dados</h2>
+      <dl class="ficha">{% for v in verificacoes %}<dt>{{ v.get_bloco_display }}</dt><dd>{{ v.get_fonte_display|selo:v.fonte }}{% if v.observacao %} <small>{{ v.observacao }}</small>{% endif %}</dd>{% endfor %}</dl>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-titulo"><h2>Checklist documental</h2><a class="btn btn-sec btn-pq" href="{% url 'imoveis:checklist' imovel.pk %}">Atualizar</a></div>
+  <div class="grade grade-2">
+  {% for categoria, docs in documentos %}
+    <div><h3>{{ categoria }}</h3>
+      {% for d in docs %}<div style="font-size:.88rem;margin-bottom:4px"><span class="semaforo semaforo-{{ d.semaforo }}" title="{{ d.semaforo }}"></span>{{ d.descricao }}{% if d.essencial %} <b>*</b>{% endif %} <small class="muted">— {{ d.get_status_display }}{% if d.prazo %}, prazo {{ d.prazo|date:"d/m" }}{% endif %}</small></div>{% endfor %}
+    </div>
+  {% endfor %}
+  </div>
+  <p class="muted" style="margin-top:8px"><small>* essencial. Semáforo: verde validado · bege pendente · amarelo condicionante · vermelho impeditivo. Certidão negativa isolada não assegura ausência de litígios; CAR não comprova propriedade.</small></p>
+</div>
+
+<div class="card">
+  <div class="card-titulo"><h2>Fotos</h2><a class="btn btn-sec btn-pq" href="{% url 'imoveis:foto_nova' imovel.pk %}">Adicionar foto</a></div>
+  <div class="galeria">
+  {% for f in fotos %}
+    <figure><img src="{% url 'core:arquivo_foto' f.pk %}" alt="{{ f.descricao }}" loading="lazy">
+      <figcaption>{{ f.get_bloco_display }} · {{ f.descricao }}<br>{{ f.data_foto|date:"d/m/Y" }}{% if f.autor %} · {{ f.autor }}{% endif %}<br>{% if f.autorizada %}✔ autorizada{% else %}⚠ sem autorização{% endif %}{% if f.publica %} · pública{% endif %}
+        <form method="post" action="{% url 'imoveis:foto_remover' f.pk %}" onsubmit="return confirm('Remover esta foto?')">{% csrf_token %}<button class="btn btn-perigo btn-pq" style="margin-top:4px">Remover</button></form>
+      </figcaption></figure>
+  {% empty %}<p class="muted">Nenhuma foto. Inclua pelo menos uma por estrutura existente e panorâmicas por área.</p>{% endfor %}
+  </div>
+</div>
+
+<div class="grade grade-2">
+  <div class="card">
+    <div class="card-titulo"><h2>Autorizações de venda</h2><a class="btn btn-sec btn-pq" href="{% url 'imoveis:contrato_novo' imovel.pk %}">Nova</a></div>
+    {% for c in contratos %}
+      <p>{% status_selo c %} <b>{{ c.get_tipo_display }}</b><br><small>{{ c.data_inicio|date:"d/m/Y" }} a {{ c.data_fim|date:"d/m/Y" }} · {{ c.comissao_pct|pct }} · {{ c.preco_autorizado|brl }} · {{ c.assinado|yesno:"assinado,não assinado" }}</small><br>
+      <a href="{% url 'imoveis:contrato_editar' imovel.pk c.pk %}">Editar</a> · <a href="{% url 'core:minuta_representacao' c.pk %}">Minuta</a></p>
+    {% empty %}<p class="muted">Sem autorização registrada. A divulgação exige autorização escrita.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h2>Negociações neste imóvel</h2>
+    {% for n in negociacoes %}
+      <p><a href="{{ n.get_absolute_url }}">{{ n.corretor_vendedor.nome }}{% if eh_central or n.comprador.corretor_id == imovel.captador_id %} × {{ n.comprador.nome }}{% endif %}</a> {% status_selo n "etapa" %}<br><small>registrada em {{ n.criado_em|date:"d/m/Y H:i" }}</small></p>
+    {% empty %}<p class="muted">Nenhuma negociação registrada.</p>{% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Demandas compatíveis na rede</h2>
+  <p class="muted">Motor de compatibilidade com explicação. O contato do comprador fica com o corretor que o registrou.</p>
+  {% for c in compativeis %}
+    <div style="border-bottom:1px solid var(--linha);padding:8px 0">
+      <b class="pontos">{{ c.pontos }} pts</b> — {{ c.demanda.descricao }} <small class="muted">(corretor {{ c.demanda.comprador.corretor.nome }})</small>
+      <ul class="criterios">{% for cr in c.criterios %}<li><span>{{ cr.nome }}: {{ cr.explicacao }}</span><span>{{ cr.pontos }}/{{ cr.maximo }}</span></li>{% endfor %}</ul>
+    </div>
+  {% empty %}<p class="muted">Nenhuma demanda ativa com compatibilidade acima de 50 pontos.</p>{% endfor %}
+</div>
+
+<div class="card">
+  <h2>Histórico de alterações e acessos</h2>
+  <ul class="timeline">{% for h in historico %}<li><div class="quando">{{ h.criado_em|date:"d/m/Y H:i" }} · {{ h.usuario|default:"sistema" }}</div><code>{{ h.acao }}</code> {{ h.descricao|truncatechars:140 }}</li>{% empty %}<li>Sem registros.</li>{% endfor %}</ul>
+</div>
+{% endblock %}

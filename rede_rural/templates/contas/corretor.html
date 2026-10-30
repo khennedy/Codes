@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}{{ corretor.nome }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{{ corretor.nome }}</h1><p>CRECI {{ corretor.creci }}/{{ corretor.creci_uf }} · {% status_selo corretor %} · nível {{ corretor.get_nivel_display }}</p></div>
+  <div class="acoes"><a class="btn btn-sec" href="{% url 'core:minuta_associacao' corretor.pk %}">Minuta de associação</a>{% if eh_central %}<a class="btn btn-sec" href="{% url 'contas:corretores' %}">Voltar</a>{% endif %}</div>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="rotulo">Volume concluído (12 meses)</div><div class="valor">{{ volume|brl_curto }}</div><div class="det">nível sugerido pelo volume: {{ nivel_sugerido }}</div></div>
+  <div class="kpi"><div class="rotulo">Captação / venda</div><div class="valor">{{ params.pct_captacao|pct }} · {{ params.pct_venda|pct }}</div><div class="det">do valor de venda, no nível atual</div></div>
+  <div class="kpi"><div class="rotulo">Mensalidade do nível</div><div class="valor">{{ params.mensalidade|brl }}</div></div>
+  <div class="kpi"><div class="rotulo">Prova prática</div><div class="valor">{{ corretor.nota_prova_pratica|default:"—" }}</div><div class="det">treinamento inicial: {{ corretor.treinamento_inicial|yesno:"concluído,pendente" }}</div></div>
+</div>
+<p class="nota">A evolução de nível considera volume concluído nos últimos 12 meses, qualidade documental, cursos, avaliações, ética e satisfação. Inatividade leva a rebaixamento com aviso e requalificação — nunca à retenção indefinida de comissões.</p>
+<div class="grade grade-2">
+  <div class="card">
+    <h2>{% if eh_central %}Credenciamento{% else %}Meus dados{% endif %}</h2>
+    <form method="post">{% csrf_token %}{% include "core/_form.html" %}<button class="btn" type="submit">Salvar</button></form>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Universidade Rural</h2>
+      {% for p in progresso %}<p>{{ p.trilha.nome }} {% status_selo p %}</p>{% empty %}<p class="muted">Nenhuma trilha iniciada.</p>{% endfor %}
+    </div>
+    <div class="card">
+      <h2>Mensalidades</h2>
+      {% for m in mensalidades %}<p>{{ m.competencia|date:"m/Y" }} — {{ m.valor|brl }} {% status_selo m %}</p>{% empty %}<p class="muted">Nenhuma mensalidade gerada.</p>{% endfor %}
+    </div>
+    <div class="card">
+      <h2>Histórico</h2>
+      <ul class="timeline">{% for h in historico %}<li><div class="quando">{{ h.criado_em|date:"d/m/Y H:i" }} · {{ h.usuario|default:"sistema" }}</div><code>{{ h.acao }}</code> {{ h.descricao }}</li>{% empty %}<li>Sem registros.</li>{% endfor %}</ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

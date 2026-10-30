@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}{% if imovel %}Editar {{ imovel.codigo }}{% else %}Nova captação{% endif %}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{% if imovel %}Editar {{ imovel.codigo }}{% else %}Cadastro técnico rural{% endif %}</h1><p>Campos desconhecidos devem ficar em branco — aparecerão como “não informado”, sem preenchimento inventado.</p></div>
+  <div class="acoes">{% if imovel %}<a class="btn btn-sec" href="{{ imovel.get_absolute_url }}">Voltar</a>{% else %}<a class="btn btn-sec" href="{% url 'imoveis:proprietario_novo' %}?proximo=imovel">Cadastrar proprietário primeiro</a>{% endif %}</div>
+</div>
+{% if imovel.publicado and not eh_central %}<div class="alerta alerta-aviso">Este imóvel está no catálogo. Alterar preço, comissão, área ou matrícula o retira do catálogo até nova validação.</div>{% endif %}
+<form method="post">{% csrf_token %}{% include "core/_form.html" %}<button class="btn" type="submit">Salvar</button></form>
+{% endblock %}

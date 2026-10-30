@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}{{ imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{{ imovel.titulo }}</h1><p>{{ imovel.codigo }} · ficha comercial para corretores · {{ imovel.get_nivel_anuncio_display }}</p></div>
+  <div class="acoes">
+    {% if completo %}<a class="btn btn-sec" href="{{ imovel.get_absolute_url }}">Cadastro completo</a>{% endif %}
+    {% if pode_dossie %}<a class="btn btn-sec" href="{% url 'imoveis:dossie' imovel.pk %}">Abrir dossiê</a>{% endif %}
+    <a class="btn" href="{% url 'negocios:negociacao_nova' %}?imovel={{ imovel.pk }}">Registrar comprador para este imóvel</a>
+  </div>
+</div>
+<div class="grade grade-3">
+  <div class="col-2">
+    <div class="card">
+      <h2>Ficha comercial</h2>
+      <dl class="ficha">
+        <dt>Local</dt><dd>{{ imovel.municipio }}/{{ imovel.uf }}{% if imovel.regiao %} · {{ imovel.regiao }}{% endif %}</dd>
+        <dt>Acesso</dt><dd>{{ imovel.acesso|info }}</dd>
+        <dt>Área total</dt><dd>{{ imovel.area_total_ha|ha }} (útil {{ imovel.area_util_ha|ha }})</dd>
+        <dt>Aptidões</dt><dd>{{ imovel.rotulos_aptidoes|join:", " }}</dd>
+        <dt>Relevo / altitude</dt><dd>{{ imovel.get_declividade_display|info }} · {% if imovel.altitude_m %}{{ imovel.altitude_m }} m{% else %}{{ ""|info }}{% endif %}</dd>
+        <dt>Mecanizável</dt><dd>{{ imovel.mecanizavel_pct|pct }}</dd>
+        <dt>Água</dt><dd>{{ imovel.cursos_dagua|info }} · irrigação {{ imovel.irrigacao|yesno:"sim,não" }} · outorga {{ imovel.get_outorga_display|lower }}</dd>
+        {% if imovel.cafe_pes %}<dt>Café</dt><dd>{{ imovel.cafe_pes|numero }} pés · {{ imovel.cafe_area_ha|ha }} · {{ imovel.cafe_variedades }}</dd>{% endif %}
+        <dt>Produtividade</dt><dd>{{ imovel.produtividade_media|info }}</dd>
+        <dt>Pecuária</dt><dd>{{ imovel.rebanho|info }}</dd>
+        <dt>Benfeitorias</dt><dd>{{ imovel.benfeitorias|linebreaksbr|info }}</dd>
+        <dt>Bens incluídos</dt><dd>{{ imovel.bens_incluidos|info }}</dd>
+        <dt>Situação documental</dt><dd>{{ decisao.rotulo|selo:decisao.codigo }}</dd>
+      </dl>
+      {% if imovel.descricao_comercial %}<h3 style="margin-top:14px">Descrição</h3><p>{{ imovel.descricao_comercial|linebreaksbr }}</p>{% endif %}
+    </div>
+    {% if fotos %}<div class="card"><h2>Fotos</h2><div class="galeria">{% for f in fotos %}<figure><img src="{% url 'core:arquivo_foto' f.pk %}" alt="{{ f.descricao }}" loading="lazy"><figcaption>{{ f.descricao }} · {{ f.data_foto|date:"m/Y" }}</figcaption></figure>{% endfor %}</div></div>{% endif %}
+  </div>
+  <div>
+    <div class="card">
+      <h2>Condições</h2>
+      <dl class="ficha">
+        <dt>Preço autorizado</dt><dd>{{ imovel.preco_referencia_anuncio|brl }}</dd>
+        <dt>Por hectare</dt><dd>{{ imovel.preco_por_ha|brl }}</dd>
+        <dt>Pagamento</dt><dd>{{ imovel.condicoes_pagamento|info }}</dd>
+        <dt>Comissão</dt><dd>{{ imovel.comissao_pct|pct }}</dd>
+        <dt>Captador</dt><dd>{{ imovel.captador.nome }}</dd>
+      </dl>
+      <p class="nota">O contato com o proprietário é feito pelo captador. Registre o comprador antes de solicitar visita, proposta ou acesso ao data room.</p>
+    </div>
+    <div class="card">
+      <h2>Minhas oportunidades aqui</h2>
+      {% for n in minhas %}<p><a href="{{ n.get_absolute_url }}">{{ n.comprador.nome }}</a> {% status_selo n "etapa" %}<br><small>{% if n.dossie_liberado %}data room liberado até {{ n.dossie_liberado_ate|date:"d/m H:i" }}{% elif n.dossie_solicitado_em %}acesso ao dossiê solicitado{% else %}sem acesso ao dossiê{% endif %}</small></p>{% empty %}<p class="muted">Nenhum comprador registrado por você neste imóvel.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

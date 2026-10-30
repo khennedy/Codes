@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}{% endblock %} · {{ PLATAFORMA_NOME }}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<div class="nao-imprimir" style="max-width:820px;margin:16px auto;display:flex;gap:8px;padding:0 16px">
+  <a class="btn btn-sec" href="javascript:history.back()">Voltar</a>
+  <button class="btn" onclick="window.print()">Imprimir / salvar PDF</button>
+</div>
+{% block aviso %}
+<div class="nao-imprimir" style="max-width:820px;margin:0 auto 12px;padding:0 16px">
+  <div class="alerta alerta-aviso"><b>Minuta orientativa de arquitetura contratual — não é instrumento para assinatura.</b> Revisão obrigatória por advogado especializado antes de qualquer uso. Campos destacados vêm do cadastro; “[A DEFINIR]” deve ser completado em Configurações.</div>
+</div>
+{% endblock %}
+<article class="documento">
+{% block documento %}{% endblock %}
+</article>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Configurações{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Configurações da rede</h1><p>Premissas ilustrativas dos documentos-base. Ajuste após deliberação dos sócios e parecer jurídico.</p></div></div>
+<form method="post">
+  {% csrf_token %}
+  {% include "core/_form.html" %}
+  <fieldset>
+    <legend>Parâmetros por nível (Estratégia V2, seção 19)</legend>
+    {{ formset.management_form }}
+    <div class="tabela-wrap"><table class="form-tabela">
+      <thead><tr><th>Nível</th><th>Captação (% do preço)</th><th>Venda (% do preço)</th><th>Mensalidade (R$)</th><th>Volume mínimo 12 meses (R$)</th></tr></thead>
+      <tbody>{% for f in formset %}<tr><td>{{ f.id }}<b>{{ f.instance }}</b></td><td>{{ f.pct_captacao }}</td><td>{{ f.pct_venda }}</td><td>{{ f.mensalidade }}</td><td>{{ f.volume_min_12m }}{{ f.errors }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="nota">O valor residual da central não é lucro: é receita bruta antes de tributos, custos, estornos e outras partilhas. Remuneração por resultado a indicadores sem CRECI está suspensa até parecer jurídico.</p>
+  </fieldset>
+  <button class="btn" type="submit">Salvar configurações</button>
+</form>
+{% endblock %}

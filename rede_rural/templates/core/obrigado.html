@@ -1,0 +1,9 @@
+{% extends "core/base_publico.html" %}
+{% block titulo %}Recebemos seu contato{% endblock %}
+{% block conteudo %}
+<div class="card login-box">
+  <h1>Obrigado, {{ lead.nome }}!</h1>
+  <p>Recebemos seu contato. Um especialista da rede vai retornar pelo telefone {{ lead.telefone }}.</p>
+  <a class="btn" href="{% url 'core:vitrine' %}">Voltar às propriedades</a>
+</div>
+{% endblock %}

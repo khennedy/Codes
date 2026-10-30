@@ -1,0 +1,34 @@
+{% extends "documentos/base_documento.html" %}{% load rede %}
+{% block titulo %}Minuta de associação — {{ corretor.nome }}{% endblock %}
+{% block documento %}
+<h1>CONTRATO DE ASSOCIAÇÃO PARA INTERMEDIAÇÃO IMOBILIÁRIA RURAL<br><small>(minuta orientativa — Lei nº 6.530/1978, art. 6º, §§ 2º a 4º)</small></h1>
+
+<h2>1. Partes</h2>
+<p><b>IMOBILIÁRIA:</b> <span class="preenchido">{{ config.razao_social }}</span>, inscrita no CNPJ sob nº <span class="preenchido">{{ config.cnpj }}</span>, registrada no CRECI-J sob nº <span class="preenchido">{{ config.creci_j }}</span>, com sede em <span class="preenchido">{{ config.endereco }}</span>, operadora da plataforma {{ PLATAFORMA_NOME }}.</p>
+<p><b>CORRETOR ASSOCIADO:</b> <span class="preenchido">{{ corretor.nome }}</span>, CPF <span class="preenchido">{{ corretor.cpf|default:"[A DEFINIR]" }}</span>, corretor de imóveis inscrito no CRECI-F/{{ corretor.creci_uf }} sob nº <span class="preenchido">{{ corretor.creci }}</span>, com atuação em <span class="preenchido">{{ corretor.regiao_atuacao|default:corretor.municipio }}</span>, que declara estar regularmente inscrito e em dia com suas obrigações perante o Conselho Regional.</p>
+
+<h2>2. Objeto</h2>
+<p>Cooperação entre as partes para a intermediação de negócios imobiliários, preferencialmente rurais, e a partilha dos resultados da corretagem efetivamente recebida, nos limites da Lei nº 6.530/1978 e de seu regulamento. O contrato não cria direito sobre imóveis ou clientes sem autorização legítima dos respectivos titulares.</p>
+
+<h2>3. Autonomia profissional</h2>
+<p>O corretor organiza sua própria atividade, define agenda, métodos e custos, sem jornada, controle de horário, subordinação ou exclusividade pessoal. Padrões de qualidade, marca, ética e proteção de dados exigidos pela rede não caracterizam vínculo empregatício. As partes reconhecem que a autonomia deve existir na prática, e não apenas neste instrumento.</p>
+
+<h2>4. Plataforma, marca, confidencialidade e dados</h2>
+<p>A imobiliária concede licença de uso da plataforma e da marca, revogável ao término do contrato. O corretor se obriga a: (a) não anunciar imóvel sem autorização escrita do titular; (b) manter sigilo sobre informações reservadas de imóveis, proprietários e compradores; (c) tratar dados pessoais apenas para a finalidade de intermediação, conforme a Lei nº 13.709/2018; (d) não utilizar informações da rede para excluir parceiros de negociações originadas na plataforma.</p>
+
+<h2>5. Anexo econômico por negócio</h2>
+<p>Para cada negócio serão registrados captador, vendedor, eventual cointermediação, percentuais e condições. Como referência inicial, no nível <span class="preenchido">{{ corretor.get_nivel_display }}</span>: captação de <span class="preenchido">{{ params.pct_captacao|pct }}</span> e venda de <span class="preenchido">{{ params.pct_venda|pct }}</span> sobre o valor de venda, limitados à comissão efetivamente devida e recebida. A remuneração depende do resultado útil da intermediação; cada parte emite o seu documento fiscal pelo valor que lhe couber e responde por seus tributos. Divergências seguem o procedimento de resolução de conflitos da rede, com suspensão apenas do rateio controvertido.</p>
+
+<h2>6. Mensalidade e serviços</h2>
+<p>O corretor pagará mensalidade de <span class="preenchido">{{ params.mensalidade|brl }}</span>, correspondente ao acesso à tecnologia, suporte e formação efetivamente disponibilizados, com regras de reajuste, suspensão, cancelamento e prestação de contas. A mensalidade independe do recebimento de comissões.</p>
+
+<h2>7. Vigência e encerramento</h2>
+<p>Prazo indeterminado, com rescisão imotivada mediante aviso prévio de 30 dias. Negócios em andamento serão apurados e liquidados conforme o anexo econômico. No encerramento, o corretor deixa de usar a marca e devolve ou elimina dados da rede, ressalvadas obrigações legais. Devem ser observadas as formalidades de registro e assistência sindical eventualmente exigidas.</p>
+
+<h2>8. Foro</h2>
+<p>Comarca de <span class="preenchido">{{ config.foro }}</span>.</p>
+
+<p style="margin-top:40px">______________________, ____ de ______________ de {{ hoje|date:"Y" }}.</p>
+<p style="margin-top:50px">_____________________________________<br>IMOBILIÁRIA</p>
+<p style="margin-top:40px">_____________________________________<br>CORRETOR ASSOCIADO</p>
+{% endblock %}

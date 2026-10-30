@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Catálogo da rede{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Catálogo da rede</h1><p>Imóveis validados pela central e disponíveis aos corretores credenciados. Contato com o proprietário sempre via captador.</p></div></div>
+<form class="card filtros" method="get">
+  {% for campo in form %}<div class="campo">{% if campo.widget_type == "checkbox" %}<label>{{ campo }} {{ campo.label }}</label>{% else %}<label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}{% endif %}</div>{% endfor %}
+  <div class="campo" style="flex:0"><button class="btn" type="submit">Filtrar</button></div>
+</form>
+<div class="imoveis-grade">
+  {% for i in imoveis %}
+  <a class="imovel-card" href="{% url 'imoveis:catalogo_detalhe' i.pk %}">
+    <div class="imovel-corpo">
+      <small class="muted">{{ i.codigo }} · {{ i.get_nivel_anuncio_display }}</small>
+      <h3>{{ i.titulo }}</h3>
+      <small>{{ i.municipio }}/{{ i.uf }}{% if i.regiao %} · {{ i.regiao }}{% endif %}</small>
+      <div class="tags">{% for a in i.rotulos_aptidoes %}<span class="tag">{{ a }}</span>{% endfor %}{% if i.irrigacao %}<span class="tag">irrigada</span>{% endif %}</div>
+      <small>{{ i.area_total_ha|ha }} · captador {{ i.captador.nome }}</small>
+      <div class="preco">{{ i.preco_referencia_anuncio|brl }} <small class="muted">· comissão {{ i.comissao_pct|pct }}</small></div>
+    </div>
+  </a>
+  {% empty %}<p class="muted">Nenhum imóvel encontrado com esses filtros.</p>{% endfor %}
+</div>
+{% endblock %}

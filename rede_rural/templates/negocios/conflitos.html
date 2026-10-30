@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Conflitos{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>Divergências comerciais</h1><p>Registro → comunicação → evidências → análise → proposta fundamentada → mediação → jurídico.</p></div>
+  <div class="acoes"><a class="btn" href="{% url 'negocios:conflito_novo' %}">Registrar divergência</a></div>
+</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>#</th><th>Tipo</th><th>Relacionado a</th><th>Reclamante</th><th>Envolvidos</th><th>Status</th><th>Aberto em</th></tr></thead>
+  <tbody>{% for c in conflitos %}
+    <tr>
+      <td><a href="{% url 'negocios:conflito' c.pk %}">#{{ c.pk }}</a></td>
+      <td>{{ c.get_tipo_display }}</td>
+      <td>{% if c.negociacao %}{{ c.negociacao }}{% elif c.imovel %}{{ c.imovel.codigo }}{% elif c.comprador %}comprador #{{ c.comprador.pk }}{% else %}—{% endif %}</td>
+      <td>{{ c.reclamante }}</td>
+      <td>{% for e in c.envolvidos.all %}{{ e.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+      <td>{% status_selo c %}</td>
+      <td>{{ c.criado_em|date:"d/m/Y" }}</td>
+    </tr>{% empty %}<tr><td colspan="7" class="vazio">Nenhuma divergência registrada.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% if form.non_field_errors %}<div class="alerta alerta-erro">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+{% for oculto in form.hidden_fields %}{{ oculto }}{% endfor %}
+{% for titulo, campos in form.secoes %}
+<fieldset>
+  {% if titulo %}<legend>{{ titulo }}</legend>{% endif %}
+  <div class="campos">
+    {% for campo in campos %}{% if not campo.is_hidden %}{% include "core/_campo.html" %}{% endif %}{% endfor %}
+  </div>
+</fieldset>
+{% endfor %}

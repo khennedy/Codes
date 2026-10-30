@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Universidade Rural{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><div><h1>Universidade Rural</h1><p>Formação continuada em conhecimento rural aplicado. Cursos e capacitações podem ser cobrados à parte.</p></div></div>
+{% if pendentes %}
+<div class="card">
+  <h2>Conclusões aguardando validação</h2>
+  {% for p in pendentes %}
+  <form method="post" action="{% url 'contas:trilha_acao' p.trilha.pk %}" class="acoes" style="justify-content:space-between;margin-bottom:6px">{% csrf_token %}
+    <input type="hidden" name="acao" value="validar"><input type="hidden" name="progresso" value="{{ p.pk }}">
+    <span><b>{{ p.corretor.nome }}</b> — {{ p.trilha.nome }} <small>(informado em {{ p.concluido_em|date:"d/m/Y" }})</small></span>
+    <button class="btn btn-pq">Validar</button>
+  </form>
+  {% endfor %}
+</div>
+{% endif %}
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Trilha</th><th>Carga horária</th><th>Ingresso</th>{% if meu_corretor %}<th>Meu status</th><th></th>{% endif %}</tr></thead>
+  <tbody>{% for t, p in trilhas %}
+    <tr>
+      <td><b>{{ t.nome }}</b>{% if t.descricao %}<br><small>{{ t.descricao }}</small>{% endif %}</td>
+      <td>{{ t.carga_horaria }} h</td>
+      <td>{% if t.obrigatoria_ingresso %}<span class="selo selo-pendente">obrigatória</span>{% endif %}</td>
+      {% if meu_corretor %}
+      <td>{% if p %}{% status_selo p %}{% else %}<span class="muted">não iniciada</span>{% endif %}</td>
+      <td>{% if not p or p.status == "inscrito" %}<form method="post" action="{% url 'contas:trilha_acao' t.pk %}">{% csrf_token %}<input type="hidden" name="acao" value="{% if p %}concluir{% else %}inscrever{% endif %}"><button class="btn btn-sec btn-pq">{% if p %}Informar conclusão{% else %}Inscrever-me{% endif %}</button></form>{% endif %}</td>
+      {% endif %}
+    </tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

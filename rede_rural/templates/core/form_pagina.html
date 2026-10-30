@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{{ titulo }}</h1></div>
+  <div class="acoes">
+    {% if voltar_obj %}<a class="btn btn-sec" href="{{ voltar_obj.get_absolute_url }}">Voltar</a>{% elif voltar %}<a class="btn btn-sec" href="{% url voltar %}">Voltar</a>{% endif %}
+  </div>
+</div>
+{% if aviso %}<div class="nota">{{ aviso }}</div>{% endif %}
+<form method="post"{% if multipart %} enctype="multipart/form-data"{% endif %}>
+  {% csrf_token %}
+  {% include "core/_form.html" %}
+  <div class="acoes"><button class="btn" type="submit">{{ botao|default:"Salvar" }}</button></div>
+</form>
+{% endblock %}

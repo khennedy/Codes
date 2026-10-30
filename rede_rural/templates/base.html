@@ -1,0 +1,58 @@
+{% load static rede %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Painel{% endblock %} · {{ PLATAFORMA_NOME }}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<input type="checkbox" id="menu-toggle" aria-label="Abrir menu">
+<div class="topo-mobile"><label for="menu-toggle" aria-hidden="true">☰</label><b>{{ PLATAFORMA_NOME }}</b><span></span></div>
+<div class="app">
+  <aside class="lateral">
+    <a class="marca" href="{% url 'core:painel' %}">
+      {% include "core/_logo.html" with tamanho=30 %}
+      <span>{{ PLATAFORMA_NOME }}</span>
+    </a>
+    <p class="marca-sub">Inteligência imobiliária rural</p>
+    <nav>
+      <a class="{% ativo 'core:painel' %}" href="{% url 'core:painel' %}">Painel</a>
+      {% if eh_central or meu_corretor.pode_operar %}
+      <span class="grupo">Imóveis</span>
+      <a class="{% ativo 'imoveis:catalogo' %}" href="{% url 'imoveis:catalogo' %}">Catálogo da rede</a>
+      <a class="{% ativo 'imoveis:lista' %}" href="{% url 'imoveis:lista' %}">{% if eh_central %}Todos os imóveis{% else %}Minhas captações{% endif %}</a>
+      <a class="{% ativo 'imoveis:proprietarios' %}" href="{% url 'imoveis:proprietarios' %}">Proprietários</a>
+      <span class="grupo">Negócios</span>
+      <a class="{% ativo 'negocios:compradores' %}" href="{% url 'negocios:compradores' %}">Compradores</a>
+      <a class="{% ativo 'negocios:funil' %}" href="{% url 'negocios:funil' %}">Negociações</a>
+      <a class="{% ativo 'negocios:conflitos' %}" href="{% url 'negocios:conflitos' %}">Conflitos</a>
+      <a class="{% ativo 'negocios:credito' %}" href="{% url 'negocios:credito' %}">Crédito (parceiro)</a>
+      <span class="grupo">Rede</span>
+      {% if eh_central %}<a class="{% ativo 'contas:corretores' %}" href="{% url 'contas:corretores' %}">Corretores</a>{% else %}<a class="{% ativo 'contas:meu_perfil' %}" href="{% url 'contas:meu_perfil' %}">Meu credenciamento</a>{% endif %}
+      <a class="{% ativo 'contas:universidade' %}" href="{% url 'contas:universidade' %}">Universidade Rural</a>
+      <a class="{% ativo 'contas:mensalidades' %}" href="{% url 'contas:mensalidades' %}">Mensalidades</a>
+      {% endif %}
+      <span class="grupo">Ferramentas</span>
+      <a class="{% ativo 'core:simulador' %}" href="{% url 'core:simulador' %}">Simulador econômico</a>
+      {% if eh_central %}
+      <a class="{% ativo 'core:leads' %}" href="{% url 'core:leads' %}">Leads da vitrine</a>
+      <a class="{% ativo 'core:configuracoes' %}" href="{% url 'core:configuracoes' %}">Configurações</a>
+      <a class="{% ativo 'core:auditoria' %}" href="{% url 'core:auditoria' %}">Auditoria</a>
+      {% if user.is_superuser %}<a href="{% url 'admin:index' %}">Administração</a>{% endif %}
+      {% endif %}
+      <a href="{% url 'core:vitrine' %}">Vitrine pública ↗</a>
+    </nav>
+    <div class="usuario-box">
+      <div><b>{{ user }}</b></div>
+      <div>{% if eh_central %}Central{% elif meu_corretor %}{{ meu_corretor.get_nivel_display }} · CRECI {{ meu_corretor.creci }}{% endif %}</div>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Sair</button></form>
+    </div>
+  </aside>
+  <main class="conteudo">
+    {% for m in messages %}<div class="alerta alerta-{{ m.tags }}">{{ m }}</div>{% endfor %}
+    {% block conteudo %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

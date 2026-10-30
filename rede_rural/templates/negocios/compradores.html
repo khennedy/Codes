@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Compradores{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{% if eh_central %}Compradores registrados{% else %}Meus compradores{% endif %}</h1><p>O registro é evidência de participação comercial — não propriedade sobre o cliente.</p></div>
+  <div class="acoes"><a class="btn" href="{% url 'negocios:comprador_novo' %}">Registrar comprador</a></div>
+</div>
+<div class="card"><div class="tabela-wrap"><table>
+  <thead><tr><th>Comprador</th><th>Contato</th><th>Origem</th><th>Cadastro</th><th>Prioridade comercial</th>{% if eh_central %}<th>Corretor</th>{% endif %}<th>Registrado</th></tr></thead>
+  <tbody>{% for c in compradores %}
+    <tr>
+      <td><a href="{{ c.get_absolute_url }}"><b>{{ c.nome }}</b></a><br><small>{{ c.get_tipo_display }} · {{ c.municipio }}</small></td>
+      <td>{{ c.telefone }}<br><small>{{ c.email }}</small></td>
+      <td>{{ c.get_origem_display }}</td>
+      <td>{{ c.get_etapa_cadastro_display }}</td>
+      <td>{% if c.duplicidade_de %}<span class="selo selo-pendente">possível duplicidade</span>{% elif c.protegido %}até {{ c.protecao_ate|date:"d/m/Y" }}{% else %}<span class="muted">vencida</span>{% endif %}</td>
+      {% if eh_central %}<td>{{ c.corretor.nome }}</td>{% endif %}
+      <td>{{ c.criado_em|date:"d/m/Y H:i" }}</td>
+    </tr>{% empty %}<tr><td colspan="7" class="vazio">Nenhum comprador registrado.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}{% load rede %}
+{% block titulo %}Negociação {{ n.imovel.codigo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div><h1>{{ n.imovel.codigo }} × {% if ve_contato %}{{ n.comprador.nome }}{% else %}comprador de {{ n.corretor_vendedor.nome }}{% endif %}</h1>
+    <p>{% status_selo n "etapa" %} · situação {{ n.situacao }} · registrada em {{ n.criado_em|date:"d/m/Y H:i" }}</p></div>
+  <div class="acoes">
+    <a class="btn btn-sec" href="{% url 'imoveis:catalogo_detalhe' n.imovel.pk %}">Ficha do imóvel</a>
+    <a class="btn btn-sec" href="{% url 'negocios:visita_nova' n.pk %}">Agendar / relatar visita</a>
+    {% if eh_central %}<a class="btn btn-cobre" href="{% url 'negocios:apuracao' n.pk %}">Comissão</a>{% endif %}
+    <a class="btn btn-sec" href="{% url 'negocios:conflito_novo' %}?negociacao={{ n.pk }}">Registrar divergência</a>
+  </div>
+</div>
+{% if n.em_disputa %}<div class="alerta alerta-aviso">Há divergência em análise: a negociação continua, mas a definição do rateio está suspensa.</div>{% endif %}
+
+<div class="grade grade-3">
+  <div class="card">
+    <h2>Partes</h2>
+    <dl class="ficha">
+      <dt>Imóvel</dt><dd><a href="{% url 'imoveis:catalogo_detalhe' n.imovel.pk %}">{{ n.imovel.titulo }}</a><br><small>{{ n.imovel.municipio }}/{{ n.imovel.uf }} · {{ n.imovel.preco_referencia_anuncio|brl }}</small></dd>
+      <dt>Captador</dt><dd>{{ n.imovel.captador.nome }}</dd>
+      <dt>Corretor vendedor</dt><dd>{{ n.corretor_vendedor.nome }}</dd>
+      <dt>Comprador</dt><dd>{% if ve_contato %}<a href="{{ n.comprador.get_absolute_url }}">{{ n.comprador.nome }}</a><br><small>{{ n.comprador.telefone }} {{ n.comprador.email }}</small>{% else %}<span class="muted">restrito ao corretor que registrou</span>{% endif %}</dd>
+      <dt>Origem do comprador</dt><dd>{{ n.get_situacao_display }}</dd>
+      <dt>Proposta</dt><dd>{{ n.valor_proposta|brl }}</dd>
+      <dt>Fechamento</dt><dd>{{ n.valor_fechamento|brl }}{% if n.data_fechamento %} em {{ n.data_fechamento|date:"d/m/Y" }}{% endif %}</dd>
+      {% if n.motivo_perda %}<dt>Motivo da perda</dt><dd>{{ n.motivo_perda }}</dd>{% endif %}
+    </dl>
+  </div>
+  <div class="card">
+    <h2>Data room</h2>
+    {% if n.dossie_liberado %}
+      <p>{{ "Liberado"|selo:"aprovado" }} até {{ n.dossie_liberado_ate|date:"d/m/Y H:i" }}</p>
+      {% if eh_vendedor %}<a class="btn" href="{% url 'imoveis:dossie' n.imovel.pk %}">Abrir dossiê</a>{% endif %}
+      {% if eh_central %}<form method="post" action="{% url 'negocios:dossie_liberar' n.pk %}" style="margin-top:8px">{% csrf_token %}<button class="btn btn-perigo btn-pq" name="acao" value="revogar">Revogar acesso</button></form>{% endif %}
+    {% elif n.dossie_solicitado_em %}
+      <p>{{ "Solicitado"|selo:"pendente" }} em {{ n.dossie_solicitado_em|date:"d/m/Y H:i" }}</p>
+      {% if eh_central %}<form method="post" action="{% url 'negocios:dossie_liberar' n.pk %}">{% csrf_token %}<button class="btn">Liberar por {{ config.dias_acesso_dossie }} dias</button></form>{% endif %}
+    {% else %}
+      <p class="muted">Acesso individual, com expiração, marca d'água e registro de cada abertura.</p>
+      {% if eh_vendedor %}<form method="post" action="{% url 'negocios:dossie_solicitar' n.pk %}">{% csrf_token %}<button class="btn">Solicitar acesso</button></form>{% endif %}
+      {% if eh_central %}<form method="post" action="{% url 'negocios:dossie_liberar' n.pk %}">{% csrf_token %}<button class="btn btn-sec">Liberar por {{ config.dias_acesso_dossie }} dias</button></form>{% endif %}
+    {% endif %}
+    {% if apuracao %}<hr><h3>Comissão</h3><p>{{ apuracao.comissao_total|brl }} {% status_selo apuracao %}</p>{% for p in apuracao.participacoes.all %}<small>{{ p.get_papel_display }}{% if p.corretor %} ({{ p.corretor.nome }}){% endif %}: {{ p.valor|brl }}</small><br>{% endfor %}{% endif %}
+  </div>
+  <div class="card">
+    <h2>Mudar etapa</h2>
+    <form method="post" action="{% url 'negocios:negociacao_etapa' n.pk %}">{% csrf_token %}
+      {% for campo in etapa_form %}{% include "core/_campo.html" %}{% endfor %}
+      <button class="btn" type="submit">Atualizar</button>
+    </form>
+  </div>
+</div>
+
+<div class="grade grade-2">
+  <div class="card">
+    <h2>Registrar atividade</h2>
+    <form method="post" action="{% url 'negocios:negociacao_atividade' n.pk %}">{% csrf_token %}
+      {% for campo in atividade_form %}{% include "core/_campo.html" %}{% endfor %}
+      <button class="btn" type="submit">Registrar</button>
+    </form>
+    <p class="nota">Visita, proposta, reunião e negociação documentada renovam a prioridade comercial por {{ config.dias_protecao_comprador }} dias.</p>
+    <h2 style="margin-top:14px">Visitas</h2>
+    {% for v in visitas %}<p><b>{{ v.data_hora|date:"d/m/Y H:i" }}</b> — {{ v.objetivo }} {{ v.realizada|yesno:"(realizada),(agendada)" }}<br><small>{{ v.corretor.nome }} · <a href="{% url 'negocios:visita_editar' n.pk v.pk %}">editar</a> · <a href="{% url 'negocios:visita_relatorio' v.pk %}">relatório</a></small></p>{% empty %}<p class="muted">Nenhuma visita.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h2>Linha do tempo</h2>
+    <ul class="timeline">{% for a in atividades %}<li><div class="quando">{{ a.criado_em|date:"d/m/Y H:i" }} · {{ a.autor|default:"sistema" }} · {{ a.get_tipo_display }}</div>{{ a.descricao|linebreaksbr }}</li>{% empty %}<li>Sem atividades.</li>{% endfor %}</ul>
+  </div>
+</div>
+{% if conflitos %}<div class="card"><h2>Divergências</h2>{% for c in conflitos %}<p><a href="{% url 'negocios:conflito' c.pk %}">#{{ c.pk }} {{ c.get_tipo_display }}</a> {% status_selo c %}</p>{% endfor %}</div>{% endif %}
+{% endblock %}

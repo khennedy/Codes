@@ -99,12 +99,15 @@ O arquivo `render.yaml`, na raiz do repositório, cria tudo de uma vez:
 O total fica em torno de **US$ 15/mês**, na região Virginia (EUA).
 
 1. Crie uma conta em https://render.com entrando com o GitHub e cadastre um cartão. A cobrança é proporcional ao uso.
-2. No painel do Render: **New → Blueprint** → escolha o repositório `khennedy/Codes` e a branch com o projeto.
-3. O Render vai pedir três valores. Guarde-os, porque são o acesso de administrador:
+2. No painel do Render: **New → Blueprint** → conecte o repositório `khennedy/Codes`. Em **Branch**, escolha a branch que contém o `render.yaml`; a branch padrão só funciona depois que o projeto for juntado a ela. Confirme que a revisão lista `terraporto` e `terraporto-db` e clique em **Deploy Blueprint**. O primeiro deploy leva de 5 a 10 minutos.
+3. Crie o acesso da central. Abra o serviço **terraporto** → **Environment** → **Add Environment Variable** e cadastre:
    - `CENTRAL_USUARIO`: login da central (ex.: `central`);
    - `CENTRAL_EMAIL`: e-mail da central;
    - `CENTRAL_SENHA`: senha forte, com no mínimo 8 caracteres, misturando letras, números e símbolos.
-4. Clique em **Apply**. O primeiro deploy leva de 5 a 10 minutos. Ao final, o site fica em `https://terraporto.onrender.com` (ou num nome parecido, se este já estiver em uso).
+
+   Clique em **Save, rebuild, and deploy**. O usuário é criado no deploy seguinte. Se o Render já tiver pedido esses valores na criação do Blueprint, este passo não é necessário.
+   Outra opção é abrir o serviço → **Shell** e rodar `python manage.py createsuperuser`; um superusuário também tem acesso de central.
+4. Quando o deploy terminar, o site fica em `https://terraporto.onrender.com` (ou num nome parecido, se este já estiver em uso).
 5. Entre com o usuário da central e preencha **Configurações**: razão social, CNPJ, CRECI-J, endereço, foro e responsável técnico. Esses dados aparecem nas minutas.
 6. Envie aos corretores o link `/inscricao/`. Cada um se inscreve e a central aprova em **Corretores**.
 

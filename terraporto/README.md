@@ -86,11 +86,37 @@ As regras de cálculo (rateio, faixas de preço, matriz documental, compatibilid
 - O contato do comprador fica só com o corretor que o registrou e com a central.
 - Fotos aceitas: JPG, PNG e WebP. Uma foto só vai para a vitrine se o proprietário autorizou o uso.
 - Consentimento registrado para proprietário, comprador, lead e encaminhamento de crédito.
+- Em produção: HTTPS obrigatório, cookies seguros, HSTS, chave secreta exigida e bloqueio de domínios desconhecidos.
+
+## Publicar no Render (piloto real)
+
+O arquivo `render.yaml`, na raiz do repositório, cria tudo de uma vez:
+
+- o site, com 0,5 CPU e 512 MB (US$ 7/mês);
+- um disco de 1 GB para documentos e fotos enviados;
+- um banco PostgreSQL de 256 MB (US$ 6/mês, mais o armazenamento).
+
+O total fica em torno de **US$ 15/mês**, na região Virginia (EUA).
+
+1. Crie uma conta em https://render.com entrando com o GitHub e cadastre um cartão. A cobrança é proporcional ao uso.
+2. No painel do Render: **New → Blueprint** → escolha o repositório `khennedy/Codes` e a branch com o projeto.
+3. O Render vai pedir três valores. Guarde-os, porque são o acesso de administrador:
+   - `CENTRAL_USUARIO`: login da central (ex.: `central`);
+   - `CENTRAL_EMAIL`: e-mail da central;
+   - `CENTRAL_SENHA`: senha forte, com no mínimo 8 caracteres, misturando letras, números e símbolos.
+4. Clique em **Apply**. O primeiro deploy leva de 5 a 10 minutos. Ao final, o site fica em `https://terraporto.onrender.com` (ou num nome parecido, se este já estiver em uso).
+5. Entre com o usuário da central e preencha **Configurações**: razão social, CNPJ, CRECI-J, endereço, foro e responsável técnico. Esses dados aparecem nas minutas.
+6. Envie aos corretores o link `/inscricao/`. Cada um se inscreve e a central aprova em **Corretores**.
+
+A cada novo commit na branch, o Render publica de novo sozinho: instala as dependências, aplica as migrações e reinicia o site. O comando `popular_demo` é bloqueado em produção, então dados fictícios nunca entram no ambiente real. O endereço `/saude/` é usado pelo Render para confirmar que o site e o banco estão no ar.
+
+**Antes de cadastrar dados reais**, faça três coisas: confirme os backups automáticos do banco e do disco no painel do Render; publique uma política de privacidade (LGPD); e registre que os dados ficam hospedados nos EUA, o que configura transferência internacional.
 
 ## Próximos passos sugeridos (fora deste MVP)
 
-- Banco PostgreSQL, deploy com HTTPS, `DJANGO_SECRET_KEY` e `DJANGO_DEBUG=0` (as variáveis já são lidas em `config/settings.py`).
-- MFA, política de retenção e backup.
+- Domínio próprio (ex.: terraporto.com.br): adicione-o em **Settings → Custom Domains** no Render e inclua-o em `DJANGO_ALLOWED_HOSTS`.
+- Recuperação de senha por e-mail (hoje a central redefine senhas pelo `/admin/`), MFA e limite de tentativas de login.
+- Política de privacidade e termos de uso publicados na vitrine.
 - Assinatura eletrônica das autorizações e contratos.
 - Aplicativo offline do corretor (vistoria com geolocalização e fotos por item).
 - Integrações licenciadas (SICAR, SIGEF/INCRA, Receita Federal), cada uma com base legal e autorização próprias.

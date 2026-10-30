@@ -10,6 +10,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.apps import apps
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.management import BaseCommand, CommandError, call_command
 from django.db import transaction
@@ -69,6 +70,8 @@ class Command(BaseCommand):
         parser.add_argument("--forcar", action="store_true", help="Apaga todos os dados antes de popular.")
 
     def handle(self, *args, **opcoes):
+        if not settings.DEBUG:
+            raise CommandError("Dados de demonstração não podem ser criados em produção.")
         if Usuario.objects.exists():
             if not opcoes["forcar"]:
                 raise CommandError("O banco já tem dados. Use --forcar para apagar tudo e recriar a demonstração.")

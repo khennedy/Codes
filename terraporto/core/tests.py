@@ -1,7 +1,11 @@
+import os
 from datetime import date
 from decimal import Decimal
+from io import StringIO
+from unittest import mock
 
-from django.test import SimpleTestCase
+from django.core.management import CommandError, call_command
+from django.test import SimpleTestCase, TestCase
 
 from core import regras
 from core.regras import ItemDecisao
@@ -167,3 +171,30 @@ class ViabilidadeTests(SimpleTestCase):
         )
         self.assertEqual([c["cenario"] for c in cenarios], ["Conservador", "Base", "Otimista"])
         self.assertLess(cenarios[0]["saldo_apos_divida"], cenarios[2]["saldo_apos_divida"])
+
+
+class ProducaoTests(TestCase):
+    def test_saude_responde_sem_validar_host(self):
+        resposta = self.client.get("/saude/", HTTP_HOST="host-interno-qualquer")
+        self.assertEqual((resposta.status_code, resposta.content), (200, b"ok"))
+
+    @mock.patch.dict(os.environ, {"CENTRAL_USUARIO": "admin", "CENTRAL_EMAIL": "a@b.com", "CENTRAL_SENHA": "Terra#Porto2026"})
+    def test_criar_central_e_idempotente(self):
+        from contas.models import Usuario
+
+        call_command("criar_central", stdout=StringIO())
+        usuario = Usuario.objects.get(username="admin")
+        self.assertTrue(usuario.eh_central and usuario.is_superuser)
+        with mock.patch.dict(os.environ, {"CENTRAL_SENHA": "Outra#Senha2026"}):
+            call_command("criar_central", stdout=StringIO())
+        usuario.refresh_from_db()
+        self.assertTrue(usuario.check_password("Terra#Porto2026"))
+
+    @mock.patch.dict(os.environ, {"CENTRAL_USUARIO": "admin", "CENTRAL_SENHA": "123"})
+    def test_criar_central_recusa_senha_fraca(self):
+        with self.assertRaises(CommandError):
+            call_command("criar_central", stdout=StringIO())
+
+    def test_demo_bloqueada_em_producao(self):
+        with self.assertRaises(CommandError):
+            call_command("popular_demo", stdout=StringIO())
